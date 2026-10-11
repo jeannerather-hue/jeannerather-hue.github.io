@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Jeanne Rather, program and operations leader connecting operations, technology, and data. Case studies with verified results, tools, and projects.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+<!-- PAGE START -->
+<title>Jeanne Rather Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<!-- STYLE SLOT -->
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#top" id="brand">Jeanne Rather</a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav">Menu</button>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#work">Work</a>
+      <a href="#delivery">How I deliver</a>
+      <a href="#tools">Tools</a>
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a class="nav-cta" href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="wrap">
+      <p class="eyebrow" id="hero-eyebrow">Program &amp; Operations Leader</p>
+      <h1 id="hero-title">I turn complex, multi&#8209;team programs into clear plans and measurable results.</h1>
+      <p class="hero-intro" id="hero-intro"></p>
+      <div class="actions" id="hero-actions"></div>
+      <p class="invite" id="hero-invite"></p>
+      <ul class="proof" id="proof"></ul>
+    </div>
+  </section>
+
+  <section class="block" id="work" aria-labelledby="work-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Case studies</p>
+        <h2 id="work-title">Problems I've solved</h2>
+        <p>Each case covers the challenge, my role, what I did, the tools and methods, the outcome, and what I learned. Measured results and qualitative outcomes are labeled separately.</p>
+      </div>
+      <div class="focus-bar" id="focus-bar" role="group" aria-label="Emphasize work for a role type"></div>
+      <div class="case-grid" id="cases"></div>
+    </div>
+  </section>
+
+  <section class="block" id="delivery" aria-labelledby="delivery-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Program delivery methods</p>
+        <h2 id="delivery-title">How I deliver</h2>
+        <p id="delivery-intro"></p>
+      </div>
+      <ol class="flow" id="delivery-flow"></ol>
+      <div class="method-grid" id="method-grid"></div>
+    </div>
+  </section>
+
+  <section class="tools-band block" id="tools" aria-labelledby="tools-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Tools &amp; technology</p>
+        <h2 id="tools-title">What I work with</h2>
+        <p>Grouped by how I use them: delivery platforms to organize the work, analytics tools hands-on for reporting and analysis, and data platforms coordinated as part of technical programs.</p>
+      </div>
+      <div class="tool-grid" id="tool-grid"></div>
+    </div>
+  </section>
+
+  <section class="block" id="projects" aria-labelledby="projects-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Data science, AI &amp; product experiments</p>
+        <h2 id="projects-title">Hands-on work outside my day job</h2>
+        <p>What I've done hands-on, the data and technology programs I've led, and the AI tools I use, kept separate on purpose.</p>
+      </div>
+      <div class="tiers" id="tiers"></div>
+      <article class="research" id="research" aria-labelledby="research-title"></article>
+      <h3 class="sub-head" id="apps-title">Product experiments</h3>
+      <p class="sub-lede">Side projects for iPhone. None are published, and none have users or revenue.</p>
+      <div class="apps" id="app-list"></div>
+    </div>
+  </section>
+
+  <section class="block" id="about" aria-labelledby="about-title">
+    <div class="wrap about-grid">
+      <div>
+        <p class="eyebrow">About</p>
+        <h2 id="about-title">From the clinic floor to enterprise data</h2>
+        <div class="about-text" id="about-text"></div>
+        <ul class="edu" id="education"></ul>
+      </div>
+      <div>
+        <h3 class="sub-head">Selected expertise</h3>
+        <dl class="expertise" id="expertise"></dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="experience" aria-labelledby="exp-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Experience</p>
+        <h2 id="exp-title">Where I've worked</h2>
+      </div>
+      <ol class="exp" id="exp-list"></ol>
+    </div>
+  </section>
+
+  <section class="block contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Contact</p>
+        <h2 id="contact-title">Let's talk about the role.</h2>
+        <p>Email is the fastest way to reach me.</p>
+      </div>
+      <div class="contact-card">
+        <span class="contact-label">Email</span>
+        <span class="contact-email" id="contact-email"></span>
+        <div class="actions" id="contact-actions"></div>
+        <p class="contact-status" id="contact-status" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <article class="case-view" id="case-view" hidden></article>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span id="footer-name">Jeanne Rather</span>
+    <span>No tracking, no cookies.</span>
+  </div>
+</footer>
+
+<noscript><p class="wrap">This site needs JavaScript turned on to show its content.</p></noscript>
+<!-- SCRIPT SLOT -->
+<!-- PAGE END -->
+<script src="content.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
