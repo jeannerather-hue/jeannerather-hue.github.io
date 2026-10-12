@@ -229,7 +229,7 @@ window.PORTFOLIO = {
       { value: "3", label: "checks for look-ahead bias and reproducibility" },
     ],
     parts: [
-      { title: "Phone app and website · in development", text: "A paper-only scanner (no trading) publishes EDMD's alerts to a web dashboard that installs to the phone home screen, with an iPhone app and a beginner learning app built through TestFlight. Every screen states that classifications are rule-based setups, not predictions or financial advice." },
+      { title: "Phone app and website · working build", text: "A paper-only scanner (no trading) publishes EDMD's alerts to a web dashboard that installs to the phone home screen, with an iPhone app and a beginner learning app built through TestFlight. Every screen states that classifications are rule-based setups, not predictions or financial advice." },
       { title: "Signal detection · rule-based", text: "An engine computes 42 point-in-time measurements per stock (momentum, relative volume, breakouts, relative strength, liquidity) and applies rules to produce an Evidence Score and stage. No trained model is involved." },
       { title: "Next-day forecast research · trained models", text: "Least-squares regression for next-day range and L2-regularized logistic regression for next-day direction, implemented in NumPy. Trained on 2022–2023 daily data (749,999 rows) and validated on 2024 (292,500 rows); 2025–2026 data was never read." },
     ],
