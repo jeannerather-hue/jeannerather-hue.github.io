@@ -222,7 +222,7 @@ window.PORTFOLIO = {
     status: "Research prototype",
     label: "Personal research · Not a product or investment advice",
     problem: "I wanted to test whether earlier signals of stock movement could be detected, and to research next-day forecasts from historical data, while checking rigorously for look-ahead bias.",
-    role: "I set the product direction and requirements and worked through the feature and evaluation design. I used Claude as a coding assistant, so I didn't write every line myself.",
+    role: "I set the product direction and requirements and worked through the feature and evaluation design.",
     facts: [
       { value: "Steps 1–10", label: "core build complete; acceptance check passed on the synthetic market" },
       { value: "117", label: "stocks replayed minute by minute on a synthetic test market" },
@@ -243,7 +243,7 @@ window.PORTFOLIO = {
     evaluation: "Pass rules were fixed before running: range bands had to be at least 15% narrower at the same coverage, and direction models needed an AUC lower bound above 0.50 and positive Brier skill. This page describes the method; it makes no claim about forecast performance.",
     limitations: "No predictive accuracy, profitability, production readiness, or live-trading result is claimed. The 117-stock replay ran on a synthetic test market, not real market data. Historical testing doesn't establish future performance.",
     lesson: "Historical testing needs leakage checks and reproducibility, and even then it doesn't establish future performance.",
-    tools: ["Python", "Polars", "NumPy", "PostgreSQL / TimescaleDB", "GitHub Actions", "Claude (coding assistant)"],
+    tools: ["Python", "Polars", "NumPy", "PostgreSQL / TimescaleDB", "GitHub Actions"],
   },
 
   apps: [
