@@ -247,7 +247,7 @@ window.PORTFOLIO = {
 
   apps: [
     {
-      id: "fieldproof", name: "FieldProof", status: "in-development",
+      id: "fieldproof", name: "FieldProof", status: "testing",
       tagline: "Take the photos. Do the work. FieldProof creates the report.",
       icon: "images/fieldproof-icon.png", color: "#1459D9", color2: "#0B3C9E",
       audience: "Small service businesses: cleaning, landscaping, repairs.",
@@ -256,7 +256,7 @@ window.PORTFOLIO = {
       next: "Test with 5–10 service providers against a gate of 10 weekly users and 3 who say they'd pay.",
     },
     {
-      id: "snapcal", name: "SnapCal", status: "in-development",
+      id: "snapcal", name: "SnapCal", status: "testing",
       tagline: "Snap it. It's on your calendar. Nothing leaves your phone.",
       icon: "images/snapcal-icon.png", color: "#4F46E5", color2: "#2E2799",
       audience: "People who get dates on paper: flyers, bills, and appointment cards.",
@@ -274,7 +274,7 @@ window.PORTFOLIO = {
       next: "",
     },
     {
-      id: "storysprout", name: "StorySprout", status: "in-development",
+      id: "storysprout", name: "StorySprout", status: "testing",
       tagline: "Turn one idea into a connected set of story slides, no design skills needed.",
       icon: "images/storysprout-icon.png", color: "#7A3FD1", color2: "#E8706A",
       audience: "People who want social-media story slides without design skills.",
