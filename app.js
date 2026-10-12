@@ -177,8 +177,9 @@
           <span class="cover-note">${a.icon ? "App icon from the project files" : "Concept cover"}</span>
         </div>
         <div class="app-body">
-          <div class="app-head"><h4 class="app-name">${esc(a.name)}</h4>${badge(a.status, STATUS[a.status] || a.status)}</div>
+          <div class="app-head"><h4 class="app-name">${esc(a.name)}</h4><span class="app-badges">${badge(a.status, STATUS[a.status] || a.status)}${a.extraBadge ? badge("done", a.extraBadge) : ""}</span></div>
           <dl>${rows}</dl>
+          ${a.link ? `<div class="actions"><a class="btn" href="${esc(a.link)}" target="_blank" rel="noopener">${icon.ext}${esc(a.linkLabel || "Visit")}</a></div>` : ""}
         </div>
       </article>`;
     }).join("");
