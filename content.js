@@ -271,9 +271,8 @@ window.PORTFOLIO = {
       icon: "images/renewals-roster-icon.png", color: "#1F2552", color2: "#3B4A9C",
       audience: "Therapy, ABA, and PT group practices, individual clinicians, and small businesses.",
       problem: "Tracking license renewals, CAQH re-attestations, malpractice insurance, board certifications, and CPR/BLS cards so nothing expires unnoticed.",
-      did: "I set the product direction and launched the website at renewalsroster.com, including the offer and pricing. I directed the build of the iPhone app, which shows what's due and expired, supports personal and business use, and syncs across a team.",
+      did: "I set the product direction and launched the product website, including the offer and pricing. I directed the build of the iPhone app, which shows what's due and expired, supports personal and business use, and syncs across a team.",
       next: "",
-      link: "https://renewalsroster.com", linkLabel: "Visit renewalsroster.com",
     },
     {
       id: "edmd-apps", name: "EDMD iPhone app & web dashboard", status: "testing",
