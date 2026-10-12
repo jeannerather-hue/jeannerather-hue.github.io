@@ -5,7 +5,7 @@
   if (!P) return;
 
   const $ = (sel) => document.querySelector(sel);
-  let focus = "";
+  let focus = (() => { try { const f = new URLSearchParams(location.search).get("focus"); return f && P.focus[f] ? f : ""; } catch (e) { return ""; } })();
 
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

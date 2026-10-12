@@ -229,6 +229,7 @@ window.PORTFOLIO = {
       { value: "3", label: "checks for look-ahead bias and reproducibility" },
     ],
     parts: [
+      { title: "Phone app and website · in development", text: "A paper-only scanner (no trading) publishes EDMD's alerts to a web dashboard that installs to the phone home screen, with an iPhone app and a beginner learning app built through TestFlight. Every screen states that classifications are rule-based setups, not predictions or financial advice." },
       { title: "Signal detection · rule-based", text: "An engine computes 42 point-in-time measurements per stock (momentum, relative volume, breakouts, relative strength, liquidity) and applies rules to produce an Evidence Score and stage. No trained model is involved." },
       { title: "Next-day forecast research · trained models", text: "Least-squares regression for next-day range and L2-regularized logistic regression for next-day direction, implemented in NumPy. Trained on 2022–2023 daily data (749,999 rows) and validated on 2024 (292,500 rows); 2025–2026 data was never read." },
     ],
@@ -262,6 +263,15 @@ window.PORTFOLIO = {
       problem: "Turning a photo of a flyer, bill, or appointment card into a confirmed calendar event or reminder, entirely on the iPhone.",
       did: "I set the product direction and build plan. The code covers capture, on-device text recognition and date detection, review and save, and onboarding.",
       next: "Collect sample flyers, bills, and appointment cards to test with.",
+    },
+    {
+      id: "edmd-apps", name: "EDMD iPhone app & web dashboard", status: "in-development",
+      tagline: "The EDMD research engine, on a phone and in a browser.",
+      icon: "images/edmd-icon.png", color: "#0F1A24", color2: "#1E6B57",
+      audience: "Beginner investors who want to understand unusual stock activity without learning trading jargon first.",
+      problem: "Making EDMD's rule-based signals readable on a phone: what the system found, why, and what each term means, with no real orders and no predictions.",
+      did: "I set the product direction and requirements for a web dashboard that installs to the phone home screen, an iPhone app built through TestFlight, and a beginner app (EDMD Learn) that explains each term and offers paper-trading practice. A paper-only scanner feeds the dashboard on trading days.",
+      next: "",
     },
     {
       id: "storysprout", name: "StorySprout", status: "in-development",
