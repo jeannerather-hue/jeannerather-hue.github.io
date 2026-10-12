@@ -265,7 +265,7 @@ window.PORTFOLIO = {
       next: "Collect sample flyers, bills, and appointment cards to test with.",
     },
     {
-      id: "edmd-apps", name: "EDMD iPhone app & web dashboard", status: "in-development",
+      id: "edmd-apps", name: "EDMD iPhone app & web dashboard", status: "testing",
       tagline: "The EDMD research engine, on a phone and in a browser.",
       icon: "images/edmd-icon.png", color: "#0F1A24", color2: "#1E6B57",
       audience: "Beginner investors who want to understand unusual stock activity without learning trading jargon first.",

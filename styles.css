@@ -101,7 +101,7 @@ ul, ol, dl { margin: 0; padding: 0; }
 /* ---------- Badges ---------- */
 .badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; font-weight: 500; white-space: nowrap; }
 .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.b-measured, .b-published, .b-done { color: var(--ok); background: var(--ok-soft); }
+.b-measured, .b-published, .b-done, .b-testing { color: var(--ok); background: var(--ok-soft); }
 .b-qualitative, .b-in-development { color: var(--info); background: var(--info-soft); }
 .b-progress, .b-prototype { color: var(--warn); background: var(--warn-soft); }
 .b-concept, .b-research { color: var(--neutral); background: var(--neutral-soft); }

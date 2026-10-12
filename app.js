@@ -10,7 +10,7 @@
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
-  const STATUS = { concept: "Concept", prototype: "Prototype", "in-development": "In development", published: "Published" };
+  const STATUS = { concept: "Concept", prototype: "Prototype", "in-development": "In development", testing: "Working build · in testing", published: "Published" };
   const RESULT = { measured: "Measured result", qualitative: "Qualitative result" };
   const icon = {
     down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg>',
