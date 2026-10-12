@@ -208,7 +208,7 @@ window.PORTFOLIO = {
     { group: "Healthcare systems", use: "Clinical, workforce, supply, quality, and planning systems from my healthcare operations work.", items: ["Epic", "Epic Clarity / Caboodle", "Cerner (Oracle Health)", "Meditech", "athenahealth", "eClinicalWorks", "Anaplan", "Press Ganey", "HealthStream", "Omnicell", "Pyxis", "Vizient", "Midas"], cases: ["emergency-supply", "compliance-patient-experience"] },
     { group: "Data & analytics", use: "Hands-on, for analysis, reporting, validation, and reconciliation.", items: ["Excel", "SQL", "Python", "R", "scikit-learn", "Tableau", "Power BI", "Snowflake", "dbt", "Databricks", "Looker", "Hex", "Tableau Prep", "Alteryx"], cases: [] },
     { group: "Data platforms & MDM", use: "Platforms in an enterprise data program I coordinated.", items: ["Microsoft Fabric", "Profisee MDM", "Coalesce"], cases: ["data-platform-mdm"] },
-    { group: "Cloud & AI", use: "AI assistants for research, drafting, planning, and prototyping, and AI meeting notes. At work, enterprise-approved AI tools only.", items: ["AWS", "Claude", "ChatGPT", "Microsoft Copilot", "Gemini Enterprise", "Granola", "Otter.ai"], cases: [] },
+    { group: "Cloud, AI & app delivery", use: "AI assistants for research, drafting, planning, and prototyping; AI meeting notes; and Apple's developer tools to build, test, and distribute my iPhone apps. At work, enterprise-approved AI tools only.", items: ["AWS", "Claude", "ChatGPT", "Microsoft Copilot", "Gemini", "Enterprise-approved AI tools", "Granola", "Otter.ai", "Apple Developer Program", "App Store Connect", "TestFlight", "GitHub Actions"], cases: [] },
   ],
 
   aiData: [
