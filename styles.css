@@ -369,3 +369,5 @@ section.block { padding-block: clamp(64px, 9vw, 112px); border-top: 1px solid va
   .case-metrics .mv { font-size: 2.3rem; }
   .case-sec { padding-block: 20px; }
 }
+
+@media (min-width: 901px) { .tool-group:last-child:nth-child(3n+1) { grid-column: 1 / -1; } }
