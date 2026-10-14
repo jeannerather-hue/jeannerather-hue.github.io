@@ -373,3 +373,4 @@ section.block { padding-block: clamp(64px, 9vw, 112px); border-top: 1px solid va
 @media (min-width: 901px) { .tool-group:last-child:nth-child(3n+1) { grid-column: 1 / -1; } }
 
 .app-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.web-list { margin-bottom: clamp(40px, 6vw, 64px); }

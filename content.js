@@ -246,6 +246,19 @@ window.PORTFOLIO = {
     tools: ["Python", "Polars", "NumPy", "PostgreSQL / TimescaleDB", "GitHub Actions"],
   },
 
+  webTools: [
+    {
+      id: "tpm-delivery-hub", name: "TPM Delivery Hub", status: "published", statusLabel: "Live · free to try",
+      tagline: "One place to run a program and report its status.",
+      icon: "images/tpm-delivery-hub-icon.svg", color: "#0F5F5C", color2: "#0B3F3D",
+      audience: "Technical program managers running cross-functional data, cloud, AI/ML, and software programs.",
+      problem: "Keeping milestones, RAID logs, decisions, RACI, and success measures in one place, and turning them into a weekly executive status report without retyping.",
+      did: "I set the product direction, workflows, and rules for a browser app with starter templates, overdue and risk flags based on stated rules, and a status report built only from entered data. It has no AI and no integrations, and data stays in the visitor's browser.",
+      next: "",
+      link: "tpm-delivery-hub/", linkLabel: "Try the app",
+    },
+  ],
+
   apps: [
     {
       id: "fieldproof", name: "FieldProof", status: "testing",

@@ -164,7 +164,7 @@
         <div><h4>Tools</h4>${tags(R.tools)}</div>
       </div>`;
 
-    $("#app-list").innerHTML = P.apps.map((a) => {
+    const appCard = (a) => {
       const art = a.icon
         ? `<img class="app-icon" src="${esc(a.icon)}" alt="${esc(a.name)} app icon" width="88" height="88">`
         : `<div class="week" aria-hidden="true">${["M", "T", "W", "T", "F", "S", "S"].map((d) => `<span>${d}</span>`).join("")}</div>`;
@@ -177,12 +177,14 @@
           <span class="cover-note">${a.icon ? "App icon from the project files" : "Concept cover"}</span>
         </div>
         <div class="app-body">
-          <div class="app-head"><h4 class="app-name">${esc(a.name)}</h4><span class="app-badges">${badge(a.status, STATUS[a.status] || a.status)}${a.extraBadge ? badge("done", a.extraBadge) : ""}</span></div>
+          <div class="app-head"><h4 class="app-name">${esc(a.name)}</h4><span class="app-badges">${badge(a.status, a.statusLabel || STATUS[a.status] || a.status)}${a.extraBadge ? badge("done", a.extraBadge) : ""}</span></div>
           <dl>${rows}</dl>
-          ${a.link ? `<div class="actions"><a class="btn" href="${esc(a.link)}" target="_blank" rel="noopener">${icon.ext}${esc(a.linkLabel || "Visit")}</a></div>` : ""}
+          ${a.link ? `<div class="actions"><a class="btn btn-primary" href="${esc(a.link)}" ${/^https?:/.test(a.link) ? ' target="_blank" rel="noopener"' : ""}>${icon.ext}${esc(a.linkLabel || "Visit")}</a></div>` : ""}
         </div>
       </article>`;
-    }).join("");
+    };
+    if (P.webTools && P.webTools.length) $("#web-list").innerHTML = P.webTools.map(appCard).join("");
+    $("#app-list").innerHTML = P.apps.map(appCard).join("");
   }
 
   function renderAbout() {
