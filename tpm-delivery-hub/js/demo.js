@@ -43,6 +43,31 @@ export function buildDemoData(today = todayISO()) {
     }, -60),
   ];
 
+  const pj = (id, programId, name, extra) => base(id, {
+    programId, name, description: '', owner: '', workstreamId: '', startDate: '', endDate: '',
+    status: '', statusReason: '', deliverables: '', ...extra,
+  });
+  const projects = [
+    pj('demo-pr1', 'demo-p1', 'Customer data model & stewardship', {
+      description: 'Agree the target customer data model and who owns each data element.', owner: 'Riley Park (fictional)', workstreamId: 'demo-w1',
+      startDate: d(-70), endDate: d(15), status: 'On Track', statusReason: 'Model approved and stewardship agreed; quality rules in progress.',
+      deliverables: 'Target data model\nStewardship model\nData quality rules',
+    }),
+    pj('demo-pr2', 'demo-p1', 'Priority source integration', {
+      description: 'Build ingestion pipelines for the three priority customer sources.', owner: 'Sam Carter (fictional)', workstreamId: 'demo-w2',
+      startDate: d(-40), endDate: d(30), status: 'At Risk', statusReason: 'Source B test extract is late; revised date awaiting sponsor decision.',
+      deliverables: 'Pipelines for sources A, B and C\nMatch/merge rules',
+    }),
+    pj('demo-pr3', 'demo-p2', 'Pilot workload migration', {
+      description: 'Move one low-risk reporting workload to prove the landing zone and cutover process.', owner: 'Robin Silva (fictional)', workstreamId: 'demo-w5',
+      startDate: d(-20), endDate: d(10), status: 'On Track', statusReason: 'Dry-run cutover scheduled.',
+    }),
+    pj('demo-pr4', 'demo-p3', 'Limited-user pilot', {
+      description: 'Run category suggestions with a small group of support agents.', owner: 'Quinn Harper (fictional)', workstreamId: 'demo-w6',
+      startDate: d(-30), endDate: d(25), status: 'Off Track', statusReason: 'Cannot start until the privacy review is complete.',
+    }),
+  ];
+
   const workstreams = [
     base('demo-w1', { programId: 'demo-p1', name: 'Data model & governance', owner: 'Riley Park (fictional)', deliverables: 'Target data model\nStewardship model' }),
     base('demo-w2', { programId: 'demo-p1', name: 'Integration & pipelines', owner: 'Sam Carter (fictional)', deliverables: 'Pipelines for three priority sources\nMatch/merge rules' }),
@@ -81,6 +106,9 @@ export function buildDemoData(today = todayISO()) {
     it('demo-i13', 'demo-p3', 'Milestone', 'Pilot deployed to limited users', 'demo-w6', 12, 'Not Started', 'High', { owner: 'Quinn Harper (fictional)', dependsOn: ['demo-i12'] }),
   ];
 
+  const ITEM_PROJECT = {"demo-i1": "demo-pr1", "demo-i2": "demo-pr1", "demo-i5": "demo-pr1", "demo-i3": "demo-pr2", "demo-i4": "demo-pr2", "demo-i8": "demo-pr3", "demo-i9": "demo-pr3", "demo-i12": "demo-pr4", "demo-i13": "demo-pr4"};
+  items.forEach((i) => { i.projectId = ITEM_PROJECT[i.id] || ''; });
+
   const rd = (id, programId, type, title, extra, created = -20) => base(id, {
     programId, type, title, description: '', owner: '', impact: '', likelihood: '', priority: '',
     dueDate: '', mitigation: '', status: 'Open', workstreamId: '', itemId: '', ...extra,
@@ -111,6 +139,9 @@ export function buildDemoData(today = todayISO()) {
     }),
   ];
 
+  const RAID_PROJECT = { 'demo-r1': 'demo-pr2', 'demo-r2': 'demo-pr1', 'demo-r4': 'demo-pr3', 'demo-r5': 'demo-pr4' };
+  raid.forEach((r) => { r.projectId = RAID_PROJECT[r.id] || ''; });
+
   const dc = (id, programId, extra) => base(id, {
     programId, title: '', dateRaised: '', neededBy: '', owner: '', options: '', status: 'Pending',
     finalDecision: '', decidedDate: '', rationale: '', impact: '', followUp: '', ...extra,
@@ -133,6 +164,9 @@ export function buildDemoData(today = todayISO()) {
       impact: 'Waiting moves pilot by about four weeks.',
     }),
   ];
+
+  const DEC_PROJECT = { 'demo-d1': 'demo-pr2', 'demo-d2': 'demo-pr1', 'demo-d3': 'demo-pr4' };
+  decisions.forEach((x) => { x.projectId = DEC_PROJECT[x.id] || ''; });
 
   const sh = (id, programId, name, role, team, responsibilities, cadence, notes = '') =>
     base(id, { programId, name, role, team, responsibilities, cadence, notes });
@@ -180,5 +214,5 @@ export function buildDemoData(today = todayISO()) {
     }, -7),
   ];
 
-  return { programs, workstreams, items, raid, decisions, stakeholders, raci, measures, reports, customTemplates: [] };
+  return { programs, projects, workstreams, items, raid, decisions, stakeholders, raci, measures, reports, customTemplates: [] };
 }

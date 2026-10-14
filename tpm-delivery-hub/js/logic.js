@@ -15,7 +15,7 @@ export const DECISION_STATUSES = ['Pending', 'Decided', 'Deferred'];
 export const RACI_ROLES = ['R', 'A', 'C', 'I'];
 
 export const COLLECTIONS = [
-  'programs', 'workstreams', 'items', 'raid', 'decisions',
+  'programs', 'projects', 'workstreams', 'items', 'raid', 'decisions',
   'stakeholders', 'raci', 'measures', 'reports', 'customTemplates',
 ];
 
@@ -192,10 +192,31 @@ export function portfolioSummary(state, today, opts = {}) {
     .filter((m) => { const d = daysUntil(m.updatedDate, today); return d !== null && d <= 0 && d >= -recentDays; })
     .sort((a, b) => compareValues(b.updatedDate, a.updatedDate));
   const raciGaps = state.raci.filter((r) => mine(r) && raciFlags(r).noA);
+  const projects = (state.projects || []).filter(mine);
+  const projectHealth = { 'On Track': 0, 'At Risk': 0, 'Off Track': 0, 'Not set': 0 };
+  projects.forEach((p) => { projectHealth[HEALTH.includes(p.status) ? p.status : 'Not set'] += 1; });
+  const projectsAtRisk = projects.filter((p) => p.status === 'At Risk' || p.status === 'Off Track');
 
   return {
     programs, health, overdueMilestones, upcomingMilestones, overdueActions, blockedItems,
-    highRaid, pendingDecisions, recentMeasures, raciGaps, upcomingDays, recentDays,
+    highRaid, pendingDecisions, recentMeasures, raciGaps, upcomingDays, recentDays, projects, projectHealth, projectsAtRisk,
+  };
+}
+
+/** Counts for one project, from items/RAID/decisions linked to it. */
+export function projectCounts(state, projectId, today, upcomingDays) {
+  const items = state.items.filter((i) => i.projectId === projectId);
+  const milestones = items.filter((i) => i.kind === 'Milestone');
+  return {
+    milestones: milestones.length,
+    milestonesDone: milestones.filter((i) => i.status === 'Done').length,
+    openItems: items.filter(isOpenItem).length,
+    overdue: items.filter((i) => itemFlag(i, today, upcomingDays) === 'overdue').length,
+    upcoming: items.filter((i) => itemFlag(i, today, upcomingDays) === 'upcoming').length,
+    blocked: items.filter((i) => i.status === 'Blocked').length,
+    openRaid: state.raid.filter((r) => r.projectId === projectId && isOpenRaid(r)).length,
+    highRaid: state.raid.filter((r) => r.projectId === projectId && isHighRaid(r)).length,
+    pendingDecisions: state.decisions.filter((d) => d.projectId === projectId && d.status === 'Pending').length,
   };
 }
 
@@ -216,6 +237,7 @@ export function programCounts(state, programId, today, upcomingDays) {
 export const REPORT_SECTIONS = [
   { key: 'changes', label: 'Changes since last report' },
   { key: 'accomplishments', label: 'Accomplishments' },
+  { key: 'projects', label: 'Project status' },
   { key: 'upcoming', label: 'Upcoming milestones' },
   { key: 'raid', label: 'Risks, issues and dependencies' },
   { key: 'help', label: 'Decisions or help needed' },
@@ -246,6 +268,11 @@ export function buildReportDraft(state, programId, opts = {}) {
   const ws = (id) => state.workstreams.find((w) => w.id === id)?.name;
   const items = state.items.filter((i) => i.programId === programId);
   const raid = state.raid.filter((r) => r.programId === programId);
+  const projectList = (state.projects || []).filter((x) => x.programId === programId);
+  const projectLines = projectList.map((x) => {
+    const c = projectCounts(state, x.id, today, upcomingDays);
+    return `- ${x.name}: ${orNE(x.status)}. ${orNE(x.statusReason)} Owner: ${orNE(x.owner)}. Milestones done: ${c.milestonesDone} of ${c.milestones}; overdue items: ${c.overdue}${isISODate(x.endDate) ? `; target end ${x.endDate}` : ''}`;
+  });
   const decisions = state.decisions.filter((d) => d.programId === programId);
   const measures = state.measures.filter((m) => m.programId === programId);
 
@@ -271,7 +298,7 @@ export function buildReportDraft(state, programId, opts = {}) {
   changes.push(`Decisions recorded as Decided in this period: ${decided.length}.`);
 
   const accomplishments = completed.map((i) => {
-    const bits = [i.kind, ws(i.workstreamId), i.owner].filter((x) => !isBlank(x)).join(', ');
+    const bits = [i.kind, (state.projects || []).find((x) => x.id === i.projectId)?.name, ws(i.workstreamId), i.owner].filter((x) => !isBlank(x)).join(', ');
     return `- ${i.name}${bits ? ` (${bits})` : ''}, completed ${i.completedDate}`;
   });
 
@@ -313,6 +340,7 @@ export function buildReportDraft(state, programId, opts = {}) {
     sections: {
       changes: changes.join('\n'),
       accomplishments: lines(accomplishments),
+      projects: lines(projectLines),
       upcoming: lines(upcoming),
       raid: lines(raidLines),
       help: lines(help),

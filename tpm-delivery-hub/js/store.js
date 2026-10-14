@@ -130,6 +130,9 @@ export function remove(collection, id) {
     state.items.forEach((i) => { if ((i.dependsOn || []).includes(id)) i.dependsOn = i.dependsOn.filter((d) => d !== id); });
     state.raid.forEach((r) => { if (r.itemId === id) r.itemId = ''; });
   }
+  if (collection === 'projects') {
+    ['items', 'raid', 'decisions'].forEach((c) => state[c].forEach((r) => { if (r.projectId === id) r.projectId = ''; }));
+  }
   if (collection === 'workstreams') {
     ['items', 'raid'].forEach((c) => state[c].forEach((r) => { if (r.workstreamId === id) r.workstreamId = ''; }));
   }

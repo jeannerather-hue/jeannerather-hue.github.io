@@ -22,6 +22,8 @@ const focusId = () => {
 };
 const inFocus = (r) => !focusId() || r.programId === focusId();
 const programName = (id) => st().programs.find((p) => p.id === id)?.name || '';
+const projName = (id) => st().projects.find((x) => x.id === id)?.name || '';
+const projOptsFor = (pid) => st().projects.filter((x) => x.programId === pid).map((x) => ({ value: x.id, label: x.name }));
 const wsName = (id) => st().workstreams.find((w) => w.id === id)?.name || '';
 const itemById = (id) => st().items.find((i) => i.id === id);
 const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
@@ -36,6 +38,7 @@ const updatedCell = (r) => (r.updatedAt ? `<time datetime="${esc(L.dateOf(r.upda
 
 const ICONS = {
   overview: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  projects: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h5"/><path d="M8 16h8"/>',
   programs: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   roadmap: '<path d="M4 21V4"/><path d="M4 4h12l-2 4 2 4H4"/>',
   raid: '<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v4"/><path d="M12 17.5v.5"/>',
@@ -51,6 +54,7 @@ const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k] || '
 const NAV = [
   { id: 'overview', label: 'Portfolio Overview' },
   { id: 'programs', label: 'Programs' },
+  { id: 'projects', label: 'Projects' },
   { id: 'roadmap', label: 'Roadmap & Milestones' },
   { id: 'raid', label: 'RAID Log' },
   { id: 'decisions', label: 'Decisions' },
@@ -65,9 +69,10 @@ const NAV2 = [
 
 // Per-view UI state (filters, sorting, tabs). Session only.
 const ui = {
-  roadmap: { q: '', kind: '', status: 'open', priority: '', owner: '', ws: '', due: '', sort: 'dueDate', dir: 'asc', mode: 'table' },
-  raid: { q: '', type: '', status: 'open', level: '', sort: 'priority', dir: 'asc' },
-  decisions: { q: '', status: '', sort: 'neededBy', dir: 'asc' },
+  projects: { q: '', status: '', sort: 'endDate', dir: 'asc' },
+  roadmap: { q: '', kind: '', status: 'open', priority: '', owner: '', ws: '', project: '', due: '', sort: 'dueDate', dir: 'asc', mode: 'table' },
+  raid: { q: '', type: '', status: 'open', level: '', project: '', sort: 'priority', dir: 'asc' },
+  decisions: { q: '', status: '', project: '', sort: 'neededBy', dir: 'asc' },
   stakeholders: { tab: 'register', q: '', sort: 'name', dir: 'asc' },
   measures: { q: '', sort: 'updatedDate', dir: 'desc' },
   reports: { tab: 'reports', programId: '', draft: null },
@@ -337,6 +342,44 @@ function programForm(p = null) {
   });
 }
 
+function projectField(v, label = 'Project') {
+  const opts = projOptsFor(v.programId);
+  return { name: 'projectId', label, type: 'select', options: opts, empty: opts.length ? 'No project' : (v.programId ? 'No projects in this program yet' : 'Choose a program first') };
+}
+
+function projectForm(x = null, presetProgram = '') {
+  if (!needProgram()) return;
+  openForm({
+    title: x ? 'Edit project' : 'New project',
+    intro: x ? '' : 'A project is a time-bound piece of work inside a program, with its own owner, dates and status.',
+    values: x || { programId: presetProgram || defaultProgram(), status: '' },
+    fields: (v) => [
+      { name: 'programId', label: 'Program', type: 'select', options: programOptions(), empty: 'Choose a program', required: true, refresh: true, resets: ['workstreamId'] },
+      { name: 'name', label: 'Project name', required: true, full: true },
+      { name: 'description', label: 'Description / objective', type: 'textarea', full: true },
+      { name: 'owner', label: 'Project owner' },
+      { name: 'workstreamId', label: 'Main workstream', type: 'select', options: st().workstreams.filter((w) => w.programId === v.programId).map((w) => ({ value: w.id, label: w.name })), empty: 'None' },
+      { name: 'startDate', label: 'Start date', type: 'date' },
+      { name: 'endDate', label: 'Target end date', type: 'date' },
+      { name: 'status', label: 'Status', type: 'select', options: L.HEALTH, empty: 'Not set', help: 'Your judgement. See Help & Definitions for suggested meanings.' },
+      { name: 'statusReason', label: 'Reason for status', type: 'textarea' },
+      { name: 'deliverables', label: 'Key deliverables', type: 'textarea', full: true, help: 'One per line.' },
+    ],
+    validate: (v) => {
+      if (v.startDate && v.endDate && v.endDate < v.startDate) return { message: 'Target end date must be on or after the start date.', field: 'endDate' };
+      if (v.status && blank(v.statusReason)) return { message: 'Add a short reason for the status so readers know why.', field: 'statusReason' };
+      return null;
+    },
+    onSave: (v) => {
+      const rec = S.upsert('projects', v);
+      toast(x ? 'Project updated.' : 'Project created.');
+      if (!x) location.hash = `#/projects/${rec.id}`;
+    },
+    onDelete: x ? () => { S.remove('projects', x.id); toast('Project deleted. Linked milestones, RAID records and decisions were kept and unlinked.'); location.hash = '#/projects'; } : null,
+    deleteLabel: 'Delete project',
+  });
+}
+
 function workstreamForm(programId, w = null) {
   openForm({
     title: w ? 'Edit workstream' : 'New workstream',
@@ -356,11 +399,12 @@ function itemFields(v) {
   const depOpts = st().items.filter((i) => i.programId === v.programId && i.id !== v.id)
     .map((i) => ({ value: i.id, label: `${i.kind}: ${i.name}${i.dueDate ? ` (due ${fmtDate(i.dueDate)})` : ''}` }));
   return [
-    { name: 'programId', label: 'Program', type: 'select', options: programOptions(), empty: 'Choose a program', required: true, refresh: true, resets: ['workstreamId', 'dependsOn'] },
+    { name: 'programId', label: 'Program', type: 'select', options: programOptions(), empty: 'Choose a program', required: true, refresh: true, resets: ['workstreamId', 'dependsOn', 'projectId'] },
     { name: 'kind', label: 'Type', type: 'select', options: L.ITEM_KINDS, help: 'Milestone: a significant checkpoint. Action: a task that moves work forward.' },
     { name: 'name', label: 'Name', required: true, full: true },
     { name: 'description', label: 'Description', type: 'textarea', full: true },
     { name: 'owner', label: 'Owner' },
+    projectField(v),
     { name: 'workstreamId', label: 'Workstream', type: 'select', options: wsOpts, empty: wsOpts.length ? 'No workstream' : 'No workstreams in this program yet' },
     { name: 'dueDate', label: 'Due date', type: 'date' },
     { name: 'status', label: 'Status', type: 'select', options: L.ITEM_STATUSES },
@@ -391,7 +435,7 @@ function raidFields(v) {
   const wsOpts = st().workstreams.filter((w) => w.programId === v.programId).map((w) => ({ value: w.id, label: w.name }));
   const itOpts = st().items.filter((i) => i.programId === v.programId).map((i) => ({ value: i.id, label: `${i.kind}: ${i.name}` }));
   return [
-    { name: 'programId', label: 'Program', type: 'select', options: programOptions(), empty: 'Choose a program', required: true, refresh: true, resets: ['workstreamId', 'itemId'] },
+    { name: 'programId', label: 'Program', type: 'select', options: programOptions(), empty: 'Choose a program', required: true, refresh: true, resets: ['workstreamId', 'itemId', 'projectId'] },
     { name: 'type', label: 'Type', type: 'select', options: L.RAID_TYPES, required: true, help: 'Risk: might happen. Assumption: believed true, needs checking. Issue: happening now. Dependency: relies on someone or something else.' },
     { name: 'title', label: 'Title', required: true, full: true },
     { name: 'description', label: 'Description', type: 'textarea', full: true },
@@ -402,28 +446,30 @@ function raidFields(v) {
     { name: 'priority', label: 'Priority', type: 'select', options: L.LEVELS, empty: 'Not set' },
     { name: 'dueDate', label: 'Due / review date', type: 'date' },
     { name: 'mitigation', label: 'Mitigation or next action', type: 'textarea', full: true },
+    projectField(v, 'Linked project'),
     { name: 'workstreamId', label: 'Linked workstream', type: 'select', options: wsOpts, empty: 'None' },
     { name: 'itemId', label: 'Linked milestone or action', type: 'select', options: itOpts, empty: 'None' },
   ];
 }
-function raidForm(r = null) {
+function raidForm(r = null, preset = {}) {
   if (!needProgram()) return;
   openForm({
     title: r ? `Edit ${r.type.toLowerCase()}` : 'New RAID record',
-    values: r || { programId: defaultProgram(), type: 'Risk', status: 'Open' },
+    values: r || { programId: defaultProgram(), type: 'Risk', status: 'Open', ...preset },
     fields: raidFields,
     onSave: (v) => { S.upsert('raid', v); toast(r ? 'RAID record updated.' : 'RAID record added.'); },
     onDelete: r ? () => { S.remove('raid', r.id); toast('RAID record deleted.'); } : null,
   });
 }
 
-function decisionForm(d = null) {
+function decisionForm(d = null, preset = {}) {
   if (!needProgram()) return;
   openForm({
     title: d ? 'Edit decision' : 'New decision',
-    values: d || { programId: defaultProgram(), status: 'Pending', dateRaised: today() },
-    fields: [
-      { name: 'programId', label: 'Program', type: 'select', options: programOptions(), empty: 'Choose a program', required: true },
+    values: d || { programId: defaultProgram(), status: 'Pending', dateRaised: today(), ...preset },
+    fields: (v) => [
+      { name: 'programId', label: 'Program', type: 'select', options: programOptions(), empty: 'Choose a program', required: true, refresh: true, resets: ['projectId'] },
+      projectField(v, 'Linked project'),
       { name: 'title', label: 'Decision needed', required: true, full: true, help: 'Phrase as a question or choice, e.g. "Approve revised go-live date".' },
       { name: 'dateRaised', label: 'Date raised', type: 'date' },
       { name: 'neededBy', label: 'Needed by', type: 'date' },
@@ -633,6 +679,7 @@ function viewOverview() {
       ${kpi(sum.highRaid.length, 'Open high-priority risks & issues', 'Risks and issues not Closed with priority or impact High.', 'high-raid', sum.highRaid.length ? 'tone-bad' : '')}
       ${kpi(sum.pendingDecisions.length, 'Decisions awaiting action', 'Decisions with status Pending.', 'pending-decisions', sum.pendingDecisions.length ? 'tone-warn' : '')}
       ${kpi(sum.overdueActions.length, 'Overdue actions', 'Open actions with a due date before today.', 'overdue-actions', sum.overdueActions.length ? 'tone-bad' : '')}
+      ${kpi(sum.projectsAtRisk.length, 'Projects at risk or off track', `Of ${plural(sum.projects.length, 'project')}, those with status At Risk or Off Track.`, 'projects-risk', sum.projectsAtRisk.length ? 'tone-warn' : '')}
       ${kpi(sum.raciGaps.length, 'RACI rows without an Accountable', 'Activities or deliverables with nobody in the A column.', 'raci', sum.raciGaps.length ? 'tone-warn' : '')}
     </ul>
 
@@ -689,6 +736,7 @@ function viewProgramDetail(id) {
   const ws = s.workstreams.filter((w) => w.programId === id);
   const items = L.sortRecords(s.items.filter((i) => i.programId === id), (i) => i.dueDate);
   const measures = s.measures.filter((m) => m.programId === id);
+  const progProjects = L.sortRecords(s.projects.filter((x) => x.programId === id), (x) => x.endDate);
   const c = L.programCounts(s, id, today(), win());
   const daysLeft = L.daysUntil(p.targetDate, today());
 
@@ -739,6 +787,12 @@ function viewProgramDetail(id) {
     </div>
 
     <section class="card">
+      <div class="panel-head"><h2>Projects</h2>${btn('Add project', 'new-project', { program: id }, 'btn small')}</div>
+      ${progProjects.length ? dataTable('projects', PROJ_COLS.filter((c) => c.key !== 'program'), progProjects, { caption: 'Projects in this program' })
+        : '<p class="panel-empty">No projects yet. Projects are time-bound pieces of work inside the program, each with an owner, dates and status.</p>'}
+    </section>
+
+    <section class="card">
       <div class="panel-head"><h2>Workstreams</h2>${btn('Add workstream', 'new-ws', { program: id }, 'btn small')}</div>
       ${ws.length ? `<div class="table-wrap"><table class="data"><caption class="sr-only">Workstreams</caption><thead><tr><th scope="col">Workstream</th><th scope="col">Owner</th><th scope="col">Deliverables</th><th scope="col">Open items</th><th scope="col">Overdue</th></tr></thead><tbody>${wsRows}</tbody></table></div>`
         : '<p class="panel-empty">No workstreams yet. Workstreams group related deliverables under one owner.</p>'}
@@ -784,6 +838,104 @@ function measuresTable(rowsHTML, withProgram) {
     <p class="small muted">Progress % = (current − baseline) ÷ (target − baseline), shown only when all three are numbers.</p>`;
 }
 
+
+// ---------------------------------------------------------------- view: projects
+function projectRows() {
+  const f = ui.projects;
+  return st().projects.filter(inFocus).filter((x) => {
+    if (f.status === 'risk' && !(x.status === 'At Risk' || x.status === 'Off Track')) return false;
+    if (f.status === 'none' && x.status) return false;
+    if (f.status && !['risk', 'none'].includes(f.status) && x.status !== f.status) return false;
+    return matches(f.q, x.name, x.owner, x.description, x.statusReason, programName(x.programId));
+  });
+}
+function projectProgress(c) {
+  if (!c.milestones) return '<span class="muted">No milestones linked</span>';
+  const pct = Math.round((c.milestonesDone / c.milestones) * 100);
+  return `<div class="progress-line"><meter min="0" max="100" value="${pct}" aria-label="Milestones done"></meter><span class="small">${c.milestonesDone} of ${c.milestones} milestones done</span></div>`;
+}
+const PROJ_COLS = [
+  { key: 'name', label: 'Project', cell: (x) => `<a class="strong" href="#/projects/${esc(x.id)}">${esc(x.name)}</a>${x.isDemo ? ' <span class="tag demo">Demo</span>' : ''}${x.description ? `<div class="small muted">${esc(truncate(x.description, 110))}</div>` : ''}` },
+  { key: 'program', label: 'Program', val: (x) => programName(x.programId), cell: (x) => esc(programName(x.programId)) },
+  { key: 'owner', label: 'Owner', cell: (x) => show(x.owner) },
+  { key: 'status', label: 'Status', val: (x) => ({ 'Off Track': 0, 'At Risk': 1, 'On Track': 2 }[x.status] ?? 3), cell: (x) => `${healthBadge(x.status)}${x.statusReason ? `<div class="small muted">${esc(truncate(x.statusReason, 110))}</div>` : ''}` },
+  { key: 'progress', label: 'Progress', sort: false, cell: (x) => projectProgress(L.projectCounts(st(), x.id, today(), win())) },
+  { key: 'overdue', label: 'Overdue items', val: (x) => L.projectCounts(st(), x.id, today(), win()).overdue, cls: 'num', cell: (x) => { const n = L.projectCounts(st(), x.id, today(), win()).overdue; return `<span class="${n ? 'text-bad' : ''}">${n}</span>`; } },
+  { key: 'raid', label: 'Open RAID', val: (x) => L.projectCounts(st(), x.id, today(), win()).openRaid, cls: 'num', cell: (x) => String(L.projectCounts(st(), x.id, today(), win()).openRaid) },
+  { key: 'endDate', label: 'Target end', cell: (x) => dateCell(x.endDate) },
+];
+function viewProjects(route) {
+  if (route.id) return viewProjectDetail(route.id);
+  const s = st();
+  const head = pageHead('Projects', 'Time-bound pieces of work inside a program, each with its own owner, dates and status. Link milestones, RAID records and decisions to a project to track it.', btn('New project', 'new-project', {}, 'btn primary'));
+  if (!s.programs.length) return head + noProgramsBox();
+  const all = s.projects.filter(inFocus);
+  const cols = PROJ_COLS.filter((c) => !(focusId() && c.key === 'program'));
+  const rows = applySort('projects', cols, projectRows());
+  const toolbar = `<div class="toolbar" role="search" aria-label="Filter projects">
+      ${searchBox('projects', 'Project, owner, reason…')}
+      ${filterSelect('projects', 'status', 'Status', [{ value: 'risk', label: 'At Risk or Off Track' }, ...L.HEALTH, { value: 'none', label: 'Not set' }])}
+      <div class="filter filter-btns">${btn('Clear filters', 'clear-filters', { view: 'projects' }, 'btn ghost small')} ${btn('Export CSV', 'export-csv', { kind: 'projects' }, 'btn ghost small')}</div></div>`;
+  const h = { 'On Track': 0, 'At Risk': 0, 'Off Track': 0 };
+  all.forEach((x) => { if (h[x.status] !== undefined) h[x.status] += 1; });
+  let body;
+  if (!all.length) body = emptyBox('No projects yet', 'Break a program into projects, such as a migration wave, a pilot, or a data domain. Each gets an owner, dates and a status, and you can link milestones, risks and decisions to it.', btn('New project', 'new-project', {}, 'btn primary'));
+  else if (!rows.length) body = emptyBox('No projects match these filters', 'Try clearing a filter or the search box.', btn('Clear filters', 'clear-filters', { view: 'projects' }, 'btn'));
+  else body = dataTable('projects', cols, rows, { caption: 'Projects', rowClass: (x) => (x.status === 'Off Track' ? 'high' : x.status === 'At Risk' ? 'pending' : '') });
+  return `${head}${focusNote()}${toolbar}<p class="result-count" aria-live="polite">Showing ${rows.length} of ${all.length} · ${h['On Track']} On Track · <span class="text-warn">${h['At Risk']} At Risk</span> · <span class="text-bad">${h['Off Track']} Off Track</span></p>${body}`;
+}
+function viewProjectDetail(id) {
+  const s = st();
+  const x = s.projects.find((p) => p.id === id);
+  if (!x) return pageHead('Project not found') + emptyBox('This project does not exist', 'It may have been deleted.', '<a class="btn" href="#/projects">Back to projects</a>');
+  const c = L.projectCounts(s, id, today(), win());
+  const items = L.sortRecords(s.items.filter((i) => i.projectId === id), (i) => i.dueDate);
+  const raid = s.raid.filter((r) => r.projectId === id && L.isOpenRaid(r));
+  const decs = s.decisions.filter((d) => d.projectId === id);
+  const daysLeft = L.daysUntil(x.endDate, today());
+  const itemRows = items.map((i) => `<tr class="${L.itemFlag(i, today(), win()) || ''}">
+      <th scope="row" data-label="Item"><button type="button" class="link" data-action="edit-item" data-id="${i.id}">${esc(i.name)}</button> <span class="tag">${esc(i.kind)}</span> ${flagTag(i)}</th>
+      <td data-label="Owner">${show(i.owner)}</td><td data-label="Due">${dateCell(i.dueDate)}</td><td data-label="Status">${statusBadge(i.status)}</td></tr>`).join('');
+  const raidRows2 = raid.map((r) => `<tr><th scope="row" data-label="Title"><button type="button" class="link" data-action="edit-raid" data-id="${r.id}">${esc(r.title)}</button></th>
+      <td data-label="Type"><span class="tag raid-${r.type.toLowerCase()}">${esc(r.type)}</span></td><td data-label="Owner">${show(r.owner)}</td><td data-label="Priority">${levelBadge(r.priority || r.impact)}</td><td data-label="Status">${statusBadge(r.status)}</td></tr>`).join('');
+  const decRows = decs.map((d) => `<tr><th scope="row" data-label="Decision"><button type="button" class="link" data-action="edit-decision" data-id="${d.id}">${esc(d.title)}</button></th>
+      <td data-label="Owner">${show(d.owner)}</td><td data-label="Needed by">${dateCell(d.neededBy)}</td><td data-label="Status">${statusBadge(d.status)}</td></tr>`).join('');
+  const table = (cap, heads, rows) => `<div class="table-wrap"><table class="data"><caption class="sr-only">${cap}</caption><thead><tr>${heads.map((h) => `<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  return `${pageHead(esc(x.name), `${x.isDemo ? '<span class="tag demo">Fictional demo project</span> ' : ''}Project in <a href="#/programs/${esc(x.programId)}">${esc(programName(x.programId))}</a>`,
+      `${btn('Edit project', 'edit-project', { id }, 'btn')}`)}
+    <p class="breadcrumb"><a href="#/projects">Projects</a> / ${esc(x.name)}</p>
+    <section class="card status-card">
+      <div class="status-line">${healthBadge(x.status)} <span>${show(x.statusReason)}</span></div>
+      <dl class="facts">
+        <div><dt>Description / objective</dt><dd>${showML(x.description)}</dd></div>
+        <div><dt>Project owner</dt><dd>${show(x.owner)}</dd></div>
+        <div><dt>Main workstream</dt><dd>${show(wsName(x.workstreamId))}</dd></div>
+        <div><dt>Start date</dt><dd>${L.isISODate(x.startDate) ? fmtDate(x.startDate) : ne}</dd></div>
+        <div><dt>Target end date</dt><dd>${L.isISODate(x.endDate) ? `${fmtDate(x.endDate)} <span class="small muted">(${daysLeft >= 0 ? `${plural(daysLeft, 'day')} away` : `${plural(-daysLeft, 'day')} ago`})</span>` : ne}</dd></div>
+        <div><dt>Key deliverables</dt><dd>${showML(x.deliverables)}</dd></div>
+      </dl>
+      ${projectProgress(c)}
+      <ul class="mini-stats">
+        <li><button type="button" class="link-plain" data-action="goto" data-preset="project-items" data-id="${id}"><b>${c.openItems}</b> open items</button></li>
+        <li class="${c.overdue ? 'bad' : ''}"><b>${c.overdue}</b> overdue</li>
+        <li class="${c.blocked ? 'bad' : ''}"><b>${c.blocked}</b> blocked</li>
+        <li><button type="button" class="link-plain" data-action="goto" data-preset="project-raid" data-id="${id}"><b>${c.openRaid}</b> open RAID</button></li>
+        <li class="${c.pendingDecisions ? 'warn' : ''}"><button type="button" class="link-plain" data-action="goto" data-preset="project-decisions" data-id="${id}"><b>${c.pendingDecisions}</b> pending decisions</button></li>
+      </ul>
+    </section>
+    <section class="card">
+      <div class="panel-head"><h2>Milestones &amp; actions</h2>
+        <div class="btn-row">${btn('Add milestone', 'new-item', { program: x.programId, project: id, kind: 'Milestone' }, 'btn small')} ${btn('Add action', 'new-item', { program: x.programId, project: id, kind: 'Action' }, 'btn small ghost')}</div></div>
+      ${items.length ? table('Milestones and actions', ['Item', 'Owner', 'Due', 'Status'], itemRows) : '<p class="panel-empty">No milestones or actions linked yet. Add one here, or set the Project field on an existing item.</p>'}
+    </section>
+    <div class="two-col">
+      <section class="card"><div class="panel-head"><h2>Open risks, issues &amp; dependencies</h2>${btn('Add', 'new-raid', { program: x.programId, project: id }, 'btn small')}</div>
+        ${raid.length ? table('Open RAID records', ['Title', 'Type', 'Owner', 'Priority', 'Status'], raidRows2) : '<p class="panel-empty">No open RAID records linked to this project.</p>'}</section>
+      <section class="card"><div class="panel-head"><h2>Decisions</h2>${btn('Log', 'new-decision', { program: x.programId, project: id }, 'btn small')}</div>
+        ${decs.length ? table('Decisions', ['Decision', 'Owner', 'Needed by', 'Status'], decRows) : '<p class="panel-empty">No decisions linked to this project.</p>'}</section>
+    </div>`;
+}
+
 // ---------------------------------------------------------------- view: roadmap
 const ITEM_COLS = [
   { key: 'name', label: 'Milestone / action', val: (i) => i.name, cell: (i) => {
@@ -793,6 +945,7 @@ const ITEM_COLS = [
       ${warns.length ? `<div class="dep-warn" role="note"><span aria-hidden="true">⚠</span> ${warns.map(esc).join('; ')}</div>` : ''}`;
   } },
   { key: 'program', label: 'Program', val: (i) => programName(i.programId), cell: (i) => esc(programName(i.programId)) },
+  { key: 'project', label: 'Project', val: (i) => projName(i.projectId), cell: (i) => (i.projectId ? `<a href="#/projects/${esc(i.projectId)}">${esc(projName(i.projectId))}</a>` : '<span class="muted">—</span>') },
   { key: 'ws', label: 'Workstream', val: (i) => wsName(i.workstreamId), cell: (i) => esc(wsName(i.workstreamId)) || '<span class="muted">—</span>' },
   { key: 'owner', label: 'Owner', cell: (i) => show(i.owner) },
   { key: 'dueDate', label: 'Due', cell: (i) => dateCell(i.dueDate) },
@@ -811,6 +964,8 @@ function roadmapRows() {
     if (f.priority && i.priority !== f.priority) return false;
     if (f.owner && i.owner !== f.owner) return false;
     if (f.ws && i.workstreamId !== f.ws) return false;
+    if (f.project === 'none' && i.projectId) return false;
+    if (f.project && f.project !== 'none' && i.projectId !== f.project) return false;
     const flag = L.itemFlag(i, today(), win());
     if (f.due === 'overdue' && flag !== 'overdue') return false;
     if (f.due === 'upcoming' && flag !== 'upcoming') return false;
@@ -839,6 +994,7 @@ function viewRoadmap() {
       ${filterSelect('roadmap', 'due', 'Due', [{ value: 'overdue', label: 'Overdue' }, { value: 'upcoming', label: `Due within ${win()} days` }, { value: 'nodate', label: 'No due date' }])}
       ${filterSelect('roadmap', 'priority', 'Priority', L.LEVELS)}
       ${filterSelect('roadmap', 'owner', 'Owner', owners)}
+      ${filterSelect('roadmap', 'project', 'Project', projectFilterOpts())}
       ${filterSelect('roadmap', 'ws', 'Workstream', wsOpts)}
       <div class="filter filter-btns">${btn('Clear filters', 'clear-filters', { view: 'roadmap' }, 'btn ghost small')}</div>
     </div>`;
@@ -883,6 +1039,7 @@ function timelineHTML(rows) {
 }
 
 // ---------------------------------------------------------------- view: RAID
+const projectFilterOpts = () => [...st().projects.filter(inFocus).map((x) => ({ value: x.id, label: focusId() ? x.name : `${programName(x.programId)} › ${x.name}` })), { value: 'none', label: 'Not linked to a project' }];
 const RAID_COLS = [
   { key: 'type', label: 'Type', cell: (r) => `<span class="tag raid-${r.type.toLowerCase()}">${esc(r.type)}</span>` },
   { key: 'title', label: 'Title', cell: (r) => `<button type="button" class="link strong" data-action="edit-raid" data-id="${r.id}">${esc(r.title)}</button>${L.raidFlag(r, today()) === 'overdue' ? ' <span class="flag flag-overdue">Past due</span>' : ''}${r.description ? `<div class="small muted">${esc(truncate(r.description))}</div>` : ''}` },
@@ -894,13 +1051,15 @@ const RAID_COLS = [
   { key: 'dueDate', label: 'Due', cell: (r) => dateCell(r.dueDate) },
   { key: 'mitigation', label: 'Mitigation / next action', sort: false, cell: (r) => show(truncate(r.mitigation, 140)) },
   { key: 'status', label: 'Status', cell: (r) => statusBadge(r.status) },
-  { key: 'link', label: 'Linked to', sort: false, cell: (r) => [wsName(r.workstreamId), itemById(r.itemId)?.name].filter(Boolean).map(esc).join('<br>') || '<span class="muted">—</span>' },
+  { key: 'link', label: 'Linked to', sort: false, cell: (r) => [projName(r.projectId) && `Project: ${projName(r.projectId)}`, wsName(r.workstreamId), itemById(r.itemId)?.name].filter(Boolean).map(esc).join('<br>') || '<span class="muted">—</span>' },
   { key: 'updatedAt', label: 'Last updated', cell: updatedCell },
 ];
 function raidRows() {
   const f = ui.raid;
   return st().raid.filter(inFocus).filter((r) => {
     if (f.type && r.type !== f.type) return false;
+    if (f.project === 'none' && r.projectId) return false;
+    if (f.project && f.project !== 'none' && r.projectId !== f.project) return false;
     if (f.status === 'open' && !L.isOpenRaid(r)) return false;
     if (f.status && f.status !== 'open' && r.status !== f.status) return false;
     if (f.level === 'high' && !L.isHighRaid(r)) return false;
@@ -925,6 +1084,7 @@ function viewRaid() {
   const toolbar = `<div class="toolbar" role="search" aria-label="Filter RAID log">
       ${searchBox('raid', 'Title, owner, mitigation…')}
       ${filterSelect('raid', 'type', 'Type', L.RAID_TYPES)}
+      ${filterSelect('raid', 'project', 'Project', projectFilterOpts())}
       ${filterSelect('raid', 'status', 'Status', [{ value: 'open', label: 'Not Closed' }, ...L.RAID_STATUSES])}
       ${filterSelect('raid', 'level', 'Flag', [{ value: 'high', label: 'High priority or impact' }, { value: 'overdue', label: 'Past due date' }])}
       <div class="filter filter-btns">${btn('Clear filters', 'clear-filters', { view: 'raid' }, 'btn ghost small')} ${btn('Export CSV', 'export-csv', { kind: 'raid' }, 'btn ghost small')}</div>
@@ -940,7 +1100,7 @@ function viewRaid() {
 // ---------------------------------------------------------------- view: decisions
 const DEC_COLS = [
   { key: 'title', label: 'Decision needed', cell: (d) => `<button type="button" class="link strong" data-action="edit-decision" data-id="${d.id}">${esc(d.title)}</button>${d.options ? `<div class="small muted"><span class="lbl">Options:</span> ${esc(truncate(d.options.replace(/\n/g, ' · '), 160))}</div>` : ''}` },
-  { key: 'program', label: 'Program', val: (d) => programName(d.programId), cell: (d) => esc(programName(d.programId)) },
+  { key: 'program', label: 'Program', val: (d) => programName(d.programId), cell: (d) => `${esc(programName(d.programId))}${d.projectId ? `<div class="small muted">${esc(projName(d.projectId))}</div>` : ''}` },
   { key: 'owner', label: 'Decision owner', cell: (d) => show(d.owner) },
   { key: 'dateRaised', label: 'Raised', cell: (d) => dateCell(d.dateRaised) },
   { key: 'neededBy', label: 'Needed by', cell: (d) => {
@@ -956,6 +1116,7 @@ const DEC_COLS = [
 function decisionRows() {
   const f = ui.decisions;
   return st().decisions.filter(inFocus).filter((d) => (!f.status || d.status === f.status)
+    && (!f.project || (f.project === 'none' ? !d.projectId : d.projectId === f.project))
     && matches(f.q, d.title, d.owner, d.options, d.finalDecision, d.rationale, d.impact, d.followUp));
 }
 function viewDecisions() {
@@ -968,6 +1129,7 @@ function viewDecisions() {
   const toolbar = `<div class="toolbar" role="search" aria-label="Filter decisions">
       ${searchBox('decisions', 'Decision, owner, rationale…')}
       ${filterSelect('decisions', 'status', 'Status', L.DECISION_STATUSES)}
+      ${filterSelect('decisions', 'project', 'Project', projectFilterOpts())}
       <div class="filter filter-btns">${btn('Clear filters', 'clear-filters', { view: 'decisions' }, 'btn ghost small')} ${btn('Export CSV', 'export-csv', { kind: 'decisions' }, 'btn ghost small')}</div></div>`;
   let body;
   if (!all.length) body = emptyBox('No decisions logged yet', 'Log decisions that need an owner and a date, and record the outcome and rationale once made. Pending decisions appear on the overview and in status reports.', btn('Log a decision', 'new-decision', {}, 'btn primary'));
@@ -1234,7 +1396,8 @@ function viewData() {
 function viewHelp() {
   const terms = [
     ['Program', 'A coordinated set of workstreams delivering a shared business outcome, usually across several teams.'],
-    ['Workstream', 'A group of related work under one owner, such as “Integration & pipelines”.'],
+    ['Project', 'A time-bound piece of work inside a program, such as a migration wave, a pilot, or one data domain, with its own owner, dates and status.'],
+    ['Workstream', 'An ongoing lane of related work under one owner, such as “Integration & pipelines”. Projects and milestones can sit in a workstream.'],
     ['Milestone', 'A significant, dated checkpoint, such as “Design approved” or “Go-live”.'],
     ['Action', 'A specific task with an owner that moves a milestone forward.'],
     ['Dependency (between items)', 'Item B depends on item A when B cannot finish until A is done.'],
@@ -1271,7 +1434,7 @@ function viewHelp() {
 
 // ---------------------------------------------------------------- router & chrome
 const VIEWS = {
-  overview: viewOverview, programs: viewPrograms, roadmap: viewRoadmap, raid: viewRaid, decisions: viewDecisions,
+  overview: viewOverview, programs: viewPrograms, projects: viewProjects, roadmap: viewRoadmap, raid: viewRaid, decisions: viewDecisions,
   stakeholders: viewStakeholders, reports: viewReports, templates: viewTemplates, data: viewData, help: viewHelp,
 };
 function parseRoute() {
@@ -1352,7 +1515,7 @@ function exportRows(kind) {
   const P = (r) => programName(r.programId);
   const cfg = {
     items: { rows: L.sortRecords(roadmapRows(), (i) => i.dueDate), cols: [
-      { label: 'Program', value: P }, { label: 'Type', value: (i) => i.kind }, { label: 'Name', value: (i) => i.name },
+      { label: 'Program', value: P }, { label: 'Project', value: (i) => projName(i.projectId) }, { label: 'Type', value: (i) => i.kind }, { label: 'Name', value: (i) => i.name },
       { label: 'Description', value: (i) => i.description }, { label: 'Owner', value: (i) => i.owner }, { label: 'Workstream', value: (i) => wsName(i.workstreamId) },
       { label: 'Due date', value: (i) => i.dueDate }, { label: 'Status', value: (i) => i.status }, { label: 'Priority', value: (i) => i.priority },
       { label: 'Depends on', value: (i) => (i.dependsOn || []).map((d) => itemById(d)?.name).filter(Boolean).join('; ') },
@@ -1361,7 +1524,7 @@ function exportRows(kind) {
       { label: 'Flag', value: (i) => ({ overdue: 'Overdue', upcoming: 'Due soon' }[L.itemFlag(i, today(), win())] || '') },
     ] },
     raid: { rows: raidRows(), cols: [
-      { label: 'Program', value: P }, { label: 'Type', value: (r) => r.type }, { label: 'Title', value: (r) => r.title },
+      { label: 'Program', value: P }, { label: 'Project', value: (r) => projName(r.projectId) }, { label: 'Type', value: (r) => r.type }, { label: 'Title', value: (r) => r.title },
       { label: 'Description', value: (r) => r.description }, { label: 'Owner', value: (r) => r.owner }, { label: 'Impact', value: (r) => r.impact },
       { label: 'Likelihood', value: (r) => r.likelihood }, { label: 'Priority', value: (r) => r.priority }, { label: 'Due date', value: (r) => r.dueDate },
       { label: 'Mitigation / next action', value: (r) => r.mitigation }, { label: 'Status', value: (r) => r.status },
@@ -1369,10 +1532,20 @@ function exportRows(kind) {
       { label: 'Last updated', value: (r) => L.dateOf(r.updatedAt) },
     ] },
     decisions: { rows: decisionRows(), cols: [
-      { label: 'Program', value: P }, { label: 'Date raised', value: (d) => d.dateRaised }, { label: 'Decision needed', value: (d) => d.title },
+      { label: 'Program', value: P }, { label: 'Project', value: (d) => projName(d.projectId) }, { label: 'Date raised', value: (d) => d.dateRaised }, { label: 'Decision needed', value: (d) => d.title },
       { label: 'Decision owner', value: (d) => d.owner }, { label: 'Options considered', value: (d) => d.options }, { label: 'Needed by', value: (d) => d.neededBy },
       { label: 'Status', value: (d) => d.status }, { label: 'Final decision', value: (d) => d.finalDecision }, { label: 'Date decided', value: (d) => d.decidedDate },
       { label: 'Rationale', value: (d) => d.rationale }, { label: 'Impact', value: (d) => d.impact }, { label: 'Follow-up action', value: (d) => d.followUp },
+    ] },
+    projects: { rows: projectRows(), cols: [
+      { label: 'Program', value: P }, { label: 'Project', value: (x) => x.name }, { label: 'Owner', value: (x) => x.owner },
+      { label: 'Status', value: (x) => x.status || NE }, { label: 'Reason', value: (x) => x.statusReason },
+      { label: 'Start date', value: (x) => x.startDate }, { label: 'Target end date', value: (x) => x.endDate },
+      { label: 'Main workstream', value: (x) => wsName(x.workstreamId) }, { label: 'Description', value: (x) => x.description },
+      { label: 'Key deliverables', value: (x) => x.deliverables },
+      { label: 'Milestones done', value: (x) => { const c = L.projectCounts(st(), x.id, today(), win()); return `${c.milestonesDone} of ${c.milestones}`; } },
+      { label: 'Overdue items', value: (x) => L.projectCounts(st(), x.id, today(), win()).overdue },
+      { label: 'Open RAID', value: (x) => L.projectCounts(st(), x.id, today(), win()).openRaid },
     ] },
     stakeholders: { rows: stakeholderRows(), cols: [
       { label: 'Program', value: (x) => (x.programId ? P(x) : 'Shared') }, { label: 'Name', value: (x) => x.name }, { label: 'Role', value: (x) => x.role },
@@ -1455,6 +1628,10 @@ const PRESETS = {
   'high-raid': () => { Object.assign(ui.raid, { type: '', status: 'open', level: 'high', q: '' }); return 'raid'; },
   'pending-decisions': () => { Object.assign(ui.decisions, { status: 'Pending', q: '' }); return 'decisions'; },
   measures: () => { ui.reports.tab = 'measures'; return 'reports'; },
+  'projects-risk': () => { ui.projects.status = 'risk'; ui.projects.q = ''; return 'projects'; },
+  'project-items': (id) => { Object.assign(ui.roadmap, { kind: '', status: '', due: '', q: '', priority: '', owner: '', ws: '', project: id }); return 'roadmap'; },
+  'project-raid': (id) => { Object.assign(ui.raid, { type: '', status: 'open', level: '', q: '', project: id }); return 'raid'; },
+  'project-decisions': (id) => { Object.assign(ui.decisions, { status: '', q: '', project: id }); return 'decisions'; },
   raci: () => { ui.stakeholders.tab = 'raci'; return 'stakeholders'; },
   'program-items': (id) => { S.setSetting('focusProgramId', id); Object.assign(ui.roadmap, { kind: '', status: '', due: '', q: '', priority: '', owner: '', ws: '' }); return 'roadmap'; },
   'program-raid': (id) => { S.setSetting('focusProgramId', id); Object.assign(ui.raid, { type: '', status: 'open', level: '', q: '' }); return 'raid'; },
@@ -1462,9 +1639,10 @@ const PRESETS = {
   'program-stakeholders': (id) => { S.setSetting('focusProgramId', id); ui.stakeholders.tab = 'register'; return 'stakeholders'; },
 };
 const RESETS = {
-  roadmap: { q: '', kind: '', status: 'open', priority: '', owner: '', ws: '', due: '' },
-  raid: { q: '', type: '', status: 'open', level: '' },
-  decisions: { q: '', status: '' },
+  roadmap: { q: '', kind: '', status: 'open', priority: '', owner: '', ws: '', project: '', due: '' },
+  raid: { q: '', type: '', status: 'open', level: '', project: '' },
+  decisions: { q: '', status: '', project: '' },
+  projects: { q: '', status: '' },
 };
 const find = (c, id) => st()[c].find((r) => r.id === id);
 
@@ -1482,14 +1660,16 @@ const ACTIONS = {
   'clear-filters': (d) => { Object.assign(ui[d.view], RESETS[d.view]); render(); },
 
   'new-program': () => programForm(),
+  'new-project': (d) => projectForm(null, d.program || ''),
+  'edit-project': (d) => projectForm(find('projects', d.id)),
   'edit-program': (d) => programForm(find('programs', d.id)),
   'new-ws': (d) => workstreamForm(d.program),
   'edit-ws': (d) => { const w = find('workstreams', d.id); workstreamForm(w.programId, w); },
-  'new-item': (d) => itemForm(null, { kind: d.kind || 'Milestone', ...(d.program ? { programId: d.program } : {}) }),
+  'new-item': (d) => itemForm(null, { kind: d.kind || 'Milestone', ...(d.program ? { programId: d.program } : {}), ...(d.project ? { projectId: d.project } : {}) }),
   'edit-item': (d) => itemForm(find('items', d.id)),
-  'new-raid': () => raidForm(),
+  'new-raid': (d) => raidForm(null, d.program ? { programId: d.program, projectId: d.project || '' } : {}),
   'edit-raid': (d) => raidForm(find('raid', d.id)),
-  'new-decision': () => decisionForm(),
+  'new-decision': (d) => decisionForm(null, d.program ? { programId: d.program, projectId: d.project || '' } : {}),
   'edit-decision': (d) => decisionForm(find('decisions', d.id)),
   'new-stakeholder': () => stakeholderForm(),
   'edit-stakeholder': (d) => stakeholderForm(find('stakeholders', d.id)),

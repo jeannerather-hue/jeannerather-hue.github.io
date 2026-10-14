@@ -452,3 +452,5 @@ fieldset.field legend { padding: 0 .3rem; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+.link-plain { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.link-plain:hover { text-decoration: underline; }
