@@ -1,8 +1,9 @@
 // TPM Delivery Hub — UI layer (hash router, views, forms, exports).
-import * as L from './logic.js?v=1791994907';
-import * as S from './store.js?v=1791994907';
-import { BUILTIN_TEMPLATES, templateToText, parseTemplateText, instantiateTemplate } from './templates.js?v=1791994907';
-import { buildDemoData } from './demo.js?v=1791994907';
+import * as L from './logic.js?v=1791999075';
+import * as S from './store.js?v=1791999075';
+import { BUILTIN_TEMPLATES, templateToText, parseTemplateText, instantiateTemplate } from './templates.js?v=1791999075';
+import { buildDemoData } from './demo.js?v=1791999075';
+import * as LC from './lifecycle.js?v=1791999075';
 
 // ---------------------------------------------------------------- helpers
 const NE = L.NOT_ENTERED;
@@ -38,6 +39,7 @@ const updatedCell = (r) => (r.updatedAt ? `<time datetime="${esc(L.dateOf(r.upda
 
 const ICONS = {
   overview: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  guided: '<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><path d="M5 8v8"/><path d="M10 6h10"/><path d="M10 12h10"/><path d="M10 18h10"/>',
   projects: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h5"/><path d="M8 16h8"/>',
   programs: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   roadmap: '<path d="M4 21V4"/><path d="M4 4h12l-2 4 2 4H4"/>',
@@ -53,6 +55,7 @@ const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k] || '
 
 const NAV = [
   { id: 'overview', label: 'Portfolio Overview' },
+  { id: 'guided', label: 'Guided Lifecycle' },
   { id: 'programs', label: 'Programs' },
   { id: 'projects', label: 'Projects' },
   { id: 'roadmap', label: 'Roadmap & Milestones' },
@@ -69,6 +72,7 @@ const NAV2 = [
 
 // Per-view UI state (filters, sorting, tabs). Session only.
 const ui = {
+  guided: { skipped: {}, unsaved: {} },
   projects: { q: '', status: '', sort: 'endDate', dir: 'asc' },
   roadmap: { q: '', kind: '', status: 'open', priority: '', owner: '', ws: '', project: '', due: '', sort: 'dueDate', dir: 'asc', mode: 'table' },
   raid: { q: '', type: '', status: 'open', level: '', project: '', sort: 'priority', dir: 'asc' },
@@ -758,7 +762,7 @@ function viewProgramDetail(id) {
   const mRows = measures.map((m) => measureRow(m, false)).join('');
 
   return `${pageHead(esc(p.name), `${p.isDemo ? '<span class="tag demo">Fictional demo program</span> ' : ''}Program workspace`,
-      `${btn('Edit program', 'edit-program', { id }, 'btn')} ${btn('Weekly status report', 'report-new', { program: id }, 'btn primary')}`)}
+      `${btn('Edit program', 'edit-program', { id }, 'btn')} <a class="btn" href="#/guided/${id}">Guided lifecycle</a> ${btn('Weekly status report', 'report-new', { program: id }, 'btn primary')}`)}
     <p class="breadcrumb"><a href="#/programs">Programs</a> / ${esc(p.name)}</p>
     <section class="card status-card">
       <div class="status-line">${healthBadge(p.status)} <span>${show(p.statusReason)}</span></div>
@@ -934,6 +938,171 @@ function viewProjectDetail(id) {
       <section class="card"><div class="panel-head"><h2>Decisions</h2>${btn('Log', 'new-decision', { program: x.programId, project: id }, 'btn small')}</div>
         ${decs.length ? table('Decisions', ['Decision', 'Owner', 'Needed by', 'Status'], decRows) : '<p class="panel-empty">No decisions linked to this project.</p>'}</section>
     </div>`;
+}
+
+// ---------------------------------------------------------------- view: guided lifecycle
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const lcOf = (pid) => LC.lifecycleFor(st(), pid);
+function saveLc(lc) { return S.upsert('lifecycles', lc); }
+const GUIDED_LINKS = { measures: 'Metrics', stakeholders: 'Stakeholder register', raci: 'RACI matrix', program: 'Program page', roadmap: 'Roadmap', raid: 'RAID log', decisions: 'Decision log', reports: 'Status reports' };
+
+function guidedSummaryChips(sum) {
+  return `<ul class="mini-stats" aria-label="Phase summary">
+    <li class="${sum.done ? 'ok' : ''}"><b>${sum.done}</b> complete</li>
+    <li><b>${sum.missing}</b> open</li>
+    <li class="${sum.blocked ? 'bad' : ''}"><b>${sum.blocked}</b> blocked</li>
+    ${sum.na ? `<li><b>${sum.na}</b> not applicable</li>` : ''}</ul>`;
+}
+
+function viewGuided(route) {
+  const s = st();
+  const head = pageHead('Guided Lifecycle', 'Walk a program through eight phases, one step at a time. Checklists only change when you change them; drafts use only what you entered.');
+  if (!s.programs.length) return head + noProgramsBox();
+  if (route.id) return viewGuidedProgram(route.id, Number(route.sub) || 0);
+  const rows = s.programs.filter((p) => !focusId() || p.id === focusId()).map((p) => {
+    const lc = lcOf(p.id);
+    if (!lc) {
+      return `<article class="card guided-card"><div class="program-card-head"><h2>${esc(p.name)}</h2>${p.isDemo ? '<span class="tag demo">Demo</span>' : ''}</div>
+        <p class="muted">Not started.</p><div class="card-actions">${btn('Start guided lifecycle', 'guided-start', { program: p.id }, 'btn primary small')}</div></article>`;
+    }
+    const pb = LC.getPlaybook(s, lc.playbookId);
+    const sum = LC.lifecycleSummary(s, lc);
+    const cur = LC.phaseByN(lc.currentPhase);
+    return `<article class="card guided-card"><div class="program-card-head"><h2><a href="#/guided/${p.id}/${cur.n}">${esc(p.name)}</a></h2>${p.isDemo ? '<span class="tag demo">Demo</span>' : ''}</div>
+      <p><span class="tag">${esc(pb.name)}</span></p>
+      <p><strong>Current phase:</strong> ${cur.n}. ${esc(cur.name)}</p>
+      ${guidedSummaryChips(sum)}
+      <div class="card-actions"><a class="btn primary small" href="#/guided/${p.id}/${cur.n}">Continue</a></div></article>`;
+  }).join('');
+  return `${head}${focusNote()}
+    <div class="callout">${esc(LC.GUIDANCE_NOTE)}</div>
+    <div class="card-grid">${rows}</div>`;
+}
+
+function viewGuidedProgram(pid, n) {
+  const s = st();
+  const p = s.programs.find((x) => x.id === pid);
+  if (!p) return pageHead('Program not found') + emptyBox('This program does not exist', 'It may have been deleted.', '<a class="btn" href="#/guided">Back to Guided Lifecycle</a>');
+  const lc = lcOf(pid);
+  if (!lc) {
+    return `${pageHead(`Guided lifecycle: ${esc(p.name)}`)}${emptyBox('Guided lifecycle not started for this program', 'Choose a playbook to start. You can change it later.', btn('Start guided lifecycle', 'guided-start', { program: pid }, 'btn primary'))}`;
+  }
+  const ph = LC.phaseByN(n || lc.currentPhase);
+  const pb = LC.getPlaybook(s, lc.playbookId);
+  const g = ui.guided;
+  const skipped = g.skipped[`${pid}:${ph.id}`] || new Set();
+
+  const steps = LC.PHASES.map((x) => {
+    const sm = LC.phaseSummary(s, lc, x.id);
+    const here = x.n === ph.n;
+    const state = sm.blocked ? 'has-blocked' : sm.total && sm.done === sm.total ? 'all-done' : '';
+    return `<li class="phase-step ${state}${x.n === lc.currentPhase ? ' is-current' : ''}"><a href="#/guided/${pid}/${x.n}"${here ? ' aria-current="step"' : ''}>
+      <span class="ps-n">${x.n}</span><span class="ps-name">${esc(x.short)}</span>
+      <span class="ps-count">${sm.done}/${sm.total}${sm.blocked ? ` · ${sm.blocked} blocked` : ''}</span></a></li>`;
+  }).join('');
+
+  const sum = LC.phaseSummary(s, lc, ph.id);
+  const na = LC.nextAction(s, lc, ph.id);
+  const nextCard = `<section class="card next-card" aria-labelledby="na-h"><h2 id="na-h">Next suggested action</h2>
+    ${na.done ? `<p>${esc(na.text)}</p>${ph.n < 8 ? `<div class="btn-row"><a class="btn primary small" href="#/guided/${pid}/${ph.n + 1}">Go to phase ${ph.n + 1}</a></div>` : ''}`
+      : `<p class="next-text">${na.blocked ? '<span class="flag flag-overdue">Blocked</span> ' : ''}${esc(na.text)}</p>
+      <dl class="facts compact"><div><dt>Owner</dt><dd>${show(na.owner)}</dd></div><div><dt>Due date</dt><dd>${na.dueDate ? fmtDate(na.dueDate) : ne}</dd></div></dl>
+      <p class="small muted">Picked by a simple rule: the first blocked item, otherwise the first open item. Owner and date come only from what you entered on that item.</p>
+      <div class="btn-row">${btn('Edit this item', 'guided-item-edit', { program: pid, key: na.key }, 'btn small')} ${btn('Add to roadmap as an action', 'guided-to-roadmap', { program: pid, key: na.key }, 'btn small ghost')}</div>`}
+    </section>`;
+
+  const q = LC.nextQuestion(s, lc, ph.id, skipped);
+  let qCard;
+  if (!q) {
+    qCard = `<section class="card question-card" aria-labelledby="gq-h"><h2 id="gq-h">Guided questions</h2>
+      <p>${sum.missing ? `No more questions in this phase for now. ${skipped.size ? `You skipped ${plural(skipped.size, 'question')}.` : ''}` : 'No open questions in this phase.'}</p>
+      ${skipped.size ? btn('Show skipped questions again', 'guided-unskip', { program: pid, phase: ph.id }, 'btn small') : ''}</section>`;
+  } else {
+    const st0 = LC.itemState(lc, q.key);
+    const ans = LC.itemAnswer(p, lc, q);
+    const ev = LC.evidence(s, p, q.ev, today(), win());
+    const answerInput = q.type === 'date'
+      ? `<input id="gq-answer" type="date" value="${esc(ans)}">`
+      : `<textarea id="gq-answer" rows="3" placeholder="Type your answer, or leave blank">${esc(ans)}</textarea>`;
+    qCard = `<section class="card question-card" aria-labelledby="gq-h">
+      <div class="panel-head"><h2 id="gq-h">Guided question</h2><span class="small muted">${sum.missing} open in this phase</span></div>
+      <p class="gq-item">${esc(q.label)}</p>
+      <div class="field"><label for="gq-answer" class="gq-q">${esc(q.q)}</label>${answerInput}
+        ${q.field ? `<p class="help">Your answer is saved to the program’s “${esc(q.field === 'targetDate' ? 'Target date' : q.field)}” field.</p>` : ''}</div>
+      ${ev ? `<p class="evidence ${ev.found ? 'found' : ''}"><span class="lbl">Found in app:</span> ${esc(ev.text)}</p>` : ''}
+      ${q.link ? `<p class="small">${btn(`Open ${GUIDED_LINKS[q.link]}`, 'guided-link', { program: pid, link: q.link }, 'link-btn')}</p>` : ''}
+      <div class="form-grid gq-meta">
+        <div class="field"><label for="gq-owner">Owner (optional)</label><input id="gq-owner" type="text" value="${esc(st0.owner)}" autocomplete="off"></div>
+        <div class="field"><label for="gq-due">Due date (optional)</label><input id="gq-due" type="date" value="${esc(st0.dueDate)}"></div>
+      </div>
+      <div class="btn-row gq-actions">
+        ${btn('Save answer', 'guided-answer', { program: pid, key: q.key, mode: 'save' }, 'btn primary')}
+        ${btn('Save and mark complete', 'guided-answer', { program: pid, key: q.key, mode: 'done' }, 'btn')}
+        ${btn('Mark blocked…', 'guided-answer', { program: pid, key: q.key, mode: 'blocked' }, 'btn ghost')}
+        ${btn('Not applicable', 'guided-answer', { program: pid, key: q.key, mode: 'na' }, 'btn ghost')}
+        ${btn('Skip for now', 'guided-answer', { program: pid, key: q.key, mode: 'skip' }, 'btn ghost')}
+      </div>
+      <p class="small muted">“Save answer” keeps the item open. Only “Save and mark complete” or the checklist marks it complete.</p>
+    </section>`;
+  }
+
+  const items = LC.phaseItems(s, lc, ph.id);
+  const custom = new Set((((lc.extra || {})[ph.id]) || []).map((x) => x.key));
+  const checklist = `<section class="card" aria-labelledby="cl-h">
+    <div class="panel-head"><h2 id="cl-h">Checklist: information and decisions to capture</h2>${btn('Add item', 'guided-add-item', { program: pid, phase: ph.id }, 'btn small')}</div>
+    <ul class="checklist">${items.map((it) => {
+      const sti = LC.itemState(lc, it.key);
+      const ans = LC.itemAnswer(p, lc, it);
+      const ev = LC.evidence(s, p, it.ev, today(), win());
+      return `<li class="cl-item st-${sti.status}">
+        <div class="cl-main">
+          <div class="cl-top"><span class="cl-label">${esc(it.label)}</span>${it.playbook ? '<span class="tag">Playbook step</span>' : ''}${custom.has(it.key) || it.custom ? '<span class="tag">Added by you</span>' : ''}</div>
+          <div class="small ${ans ? '' : 'muted'}">${ans ? esc(truncate(ans, 220)) : 'No answer entered.'}</div>
+          ${sti.status === 'blocked' ? `<div class="small text-bad"><span class="lbl">Blocker:</span> ${show(sti.blockedReason)}</div>` : ''}
+          ${ev ? `<div class="evidence small ${ev.found ? 'found' : ''}"><span class="lbl">Found in app:</span> ${esc(ev.text)}</div>` : ''}
+          <div class="small muted">Owner: ${sti.owner ? esc(sti.owner) : NE} · Due: ${sti.dueDate ? fmtDate(sti.dueDate) : NE}</div>
+        </div>
+        <div class="cl-side">
+          <label class="sr-only" for="gs-${esc(it.key)}">Status for ${esc(it.label)}</label>
+          <select id="gs-${esc(it.key)}" data-gstatus="${esc(it.key)}" data-program="${pid}">${LC.ITEM_STATUSES.map((o) => `<option value="${o.value}"${o.value === sti.status ? ' selected' : ''}>${o.label}</option>`).join('')}</select>
+          <div class="btn-row">${btn('Edit', 'guided-item-edit', { program: pid, key: it.key }, 'btn ghost small')}${custom.has(it.key) ? btn('Remove', 'guided-remove-item', { program: pid, phase: ph.id, key: it.key }, 'btn danger-ghost small') : ''}</div>
+        </div></li>`;
+    }).join('')}</ul></section>`;
+
+  const dkey = `${pid}:${ph.id}`;
+  const saved = (lc.drafts || {})[ph.id];
+  const text = g.unsaved[dkey] ?? (saved ? saved.text : LC.buildPhaseDraft(s, pid, ph.n, { today: today(), upcomingDays: win() }));
+  const draftCard = `<section class="card draft-card" aria-labelledby="dr-h">
+    <div class="panel-head"><h2 id="dr-h">Draft: ${esc(ph.draftTitle)}</h2><span class="small muted">${g.unsaved[dkey] !== undefined ? 'Unsaved edits' : saved ? `Saved ${fmtDate(L.dateOf(saved.savedAt))}` : 'Built from current data, not saved yet'}</span></div>
+    <p class="small muted">Edit freely. Anything missing shows “${NE}”. Rebuilding replaces the text with a fresh draft from current data.</p>
+    <label for="gd-text" class="sr-only">Draft text</label>
+    <textarea id="gd-text" class="draft-text" rows="18" data-gdraft="${dkey}">${esc(text)}</textarea>
+    <div class="btn-row report-actions">
+      ${btn('Save draft', 'guided-draft-save', { program: pid, phase: ph.id }, 'btn primary')}
+      ${btn('Export Markdown', 'guided-draft-md', { program: pid, phase: ph.id }, 'btn')}
+      ${btn('Copy', 'guided-draft-copy', { program: pid, phase: ph.id }, 'btn ghost')}
+      ${btn('Rebuild from current data', 'guided-draft-rebuild', { program: pid, phase: ph.id }, 'btn ghost')}
+      ${ph.id === 'execution' ? btn('Open in status report editor', 'report-new', { program: pid }, 'btn ghost') : ''}
+    </div></section>`;
+
+  return `${pageHead(`Guided lifecycle: ${esc(p.name)}`, `${esc(pb.name)} · <span class="tag">Guidance: adapt to your process</span>`,
+      `${btn('Change playbook', 'guided-playbook', { program: pid }, 'btn small')} <a class="btn small ghost" href="#/programs/${pid}">Program page</a>`)}
+    <p class="breadcrumb"><a href="#/guided">Guided Lifecycle</a> / ${esc(p.name)}</p>
+    <nav aria-label="Lifecycle phases" class="phase-nav"><ol class="phase-steps">${steps}</ol></nav>
+    <section class="card phase-head" aria-labelledby="ph-h">
+      <p class="eyebrow">Phase ${ph.n} of 8${lc.currentPhase === ph.n ? ' · Current phase' : ''}</p>
+      <h2 id="ph-h">${esc(ph.name)}</h2>
+      <p class="phase-purpose">${esc(ph.purpose)}</p>
+      ${guidedSummaryChips(sum)}
+      <div class="btn-row">
+        ${ph.n > 1 ? `<a class="btn small" href="#/guided/${pid}/${ph.n - 1}">← Phase ${ph.n - 1}</a>` : ''}
+        ${ph.n < 8 ? `<a class="btn small" href="#/guided/${pid}/${ph.n + 1}">Phase ${ph.n + 1} →</a>` : ''}
+        ${lc.currentPhase === ph.n ? '' : btn('Set as current phase', 'guided-set-current', { program: pid, phase: ph.n }, 'btn small ghost')}
+      </div>
+    </section>
+    <div class="guided-grid">${qCard}${nextCard}</div>
+    ${checklist}
+    ${draftCard}`;
 }
 
 // ---------------------------------------------------------------- view: roadmap
@@ -1297,9 +1466,23 @@ function viewTemplates() {
       </details>
       <div class="card-actions">${btn('Use this template', 'use-template', { id: t.id }, 'btn primary small')}${t.builtIn ? '' : btn('Delete', 'delete-template', { id: t.id }, 'btn danger-ghost small')}</div>
     </article>`).join('');
-  return `${pageHead('Templates', 'Optional starting points for common TPM program types. You can edit everything before and after creating the program.')}
+  const pbCards = LC.allPlaybooks(st()).map((pb) => {
+    const count = LC.PHASES.reduce((n, ph) => n + pb.phases[ph.id].length, 0);
+    return `<article class="card template-card">
+      <div class="program-card-head"><h3 class="h-card">${esc(pb.name)}</h3><span class="tag">${pb.builtIn ? esc(pb.area) : 'My playbook'}</span></div>
+      <p>${esc(pb.description || '')}</p>
+      <p class="small muted">${plural(count, 'checklist item')} across 8 phases. Guidance to adapt to your employer’s process.</p>
+      <details><summary>Preview steps</summary>${LC.PHASES.map((ph) => `<h4 class="h-sm">${ph.n}. ${esc(ph.name)}</h4><ul>${pb.phases[ph.id].map((it) => `<li>${esc(it.label)}${it.playbook ? ' <span class="tag">Playbook step</span>' : ''}</li>`).join('')}</ul>`).join('')}</details>
+      <div class="card-actions"><a class="btn primary small" href="#/guided">Use in Guided Lifecycle</a>${btn(pb.builtIn ? 'Customize a copy' : 'Edit', 'playbook-customize', { id: pb.id }, 'btn small')}${pb.builtIn ? '' : btn('Delete', 'playbook-delete', { id: pb.id }, 'btn danger-ghost small')}</div>
+    </article>`;
+  }).join('');
+  return `${pageHead('Templates', 'Starting points you can edit: program templates that pre-fill a new program, and lifecycle playbooks for the Guided Lifecycle.')}
+    <h2 class="section-title">Program templates</h2>
     <div class="callout">Templates are generic. They contain no company, client, vendor or project information, and success measures start with no values. Milestone dates are optional placeholders calculated from your start date.</div>
-    <div class="card-grid">${cards}</div>`;
+    <div class="card-grid">${cards}</div>
+    <h2 class="section-title" id="playbooks">Lifecycle playbooks</h2>
+    <div class="callout">${esc(LC.GUIDANCE_NOTE)}</div>
+    <div class="card-grid">${pbCards}</div>`;
 }
 function templateForm(t) {
   const txt = templateToText(t);
@@ -1427,6 +1610,14 @@ function viewHelp() {
     <section class="card"><h2>Suggested meaning of overall status</h2>
       <dl class="def-list">${healthDefs.map(([t, d]) => `<div><dt>${healthBadge(t)}</dt><dd>${d}</dd></div>`).join('')}</dl>
       <p class="small muted">Overall status is always your judgement. The app never changes it automatically.</p></section>
+    <section class="card"><h2>Guided Lifecycle rules</h2>
+      <dl class="def-list">
+        <div><dt>Checklist status</dt><dd>Every item starts Open. It only becomes Complete, Blocked or Not applicable when you set it. Saving an answer does not complete an item.</dd></div>
+        <div><dt>Found in app</dt><dd>A read-only hint showing related data you already entered (for example the number of success measures). It never changes an item’s status.</dd></div>
+        <div><dt>Next suggested action</dt><dd>The first Blocked item in the phase, otherwise the first Open item. Owner and due date are only what you entered on that item.</dd></div>
+        <div><dt>Drafts</dt><dd>Built from your program data and checklist answers. Missing information shows “${NE}”. Drafts are editable and saved only when you choose Save draft.</dd></div>
+        <div><dt>Playbooks</dt><dd>Generic guidance. Customize a copy on the Templates page to match your employer’s process.</dd></div>
+      </dl></section>
     <section class="card"><h2>TPM terms</h2><dl class="def-list">${terms.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></section>
     <section class="card"><h2>Importing milestones from a spreadsheet</h2>
       <p>On Roadmap &amp; Milestones choose <em>Import CSV</em>. Recognized columns: Name (required), Type (Milestone/Action), Description, Owner, Workstream, Due date (YYYY-MM-DD), Status, Priority, Blockers, Next steps. New workstream names are created automatically. Use <em>CSV template</em> to download an example file.</p></section>`;
@@ -1434,7 +1625,7 @@ function viewHelp() {
 
 // ---------------------------------------------------------------- router & chrome
 const VIEWS = {
-  overview: viewOverview, programs: viewPrograms, projects: viewProjects, roadmap: viewRoadmap, raid: viewRaid, decisions: viewDecisions,
+  overview: viewOverview, guided: viewGuided, programs: viewPrograms, projects: viewProjects, roadmap: viewRoadmap, raid: viewRaid, decisions: viewDecisions,
   stakeholders: viewStakeholders, reports: viewReports, templates: viewTemplates, data: viewData, help: viewHelp,
 };
 function parseRoute() {
@@ -1442,7 +1633,7 @@ function parseRoute() {
   const [path] = h.split('?');
   const parts = path.split('/').filter(Boolean).map(decodeURIComponent);
   const view = VIEWS[parts[0]] ? parts[0] : 'overview';
-  return { view, id: parts[1] || '' };
+  return { view, id: parts[1] || '', sub: parts[2] || '' };
 }
 const main = $('#main');
 let lastRouteKey = '';
@@ -1471,7 +1662,7 @@ function updateChrome(route) {
 
 function render() {
   const route = parseRoute();
-  const key = `${route.view}/${route.id}`;
+  const key = `${route.view}/${route.id}/${route.sub}`;
   const routeChanged = key !== lastRouteKey;
   lastRouteKey = key;
   const ae = document.activeElement;
@@ -1659,6 +1850,192 @@ const ACTIONS = {
   'set-ui': (d) => { ui[d.view][d.key] = d.value; render(); },
   'clear-filters': (d) => { Object.assign(ui[d.view], RESETS[d.view]); render(); },
 
+  // ----- guided lifecycle
+  'guided-start': (d) => {
+    const opts = LC.allPlaybooks(st()).map((pb) => ({ value: pb.id, label: pb.name }));
+    openForm({
+      title: 'Start guided lifecycle',
+      intro: `Program: <strong>${esc(programName(d.program))}</strong>. Pick the playbook closest to this program. ${esc(LC.GUIDANCE_NOTE)}`,
+      values: { playbookId: 'general', currentPhase: '1' },
+      fields: [
+        { name: 'playbookId', label: 'Playbook', type: 'select', options: opts, full: true },
+        { name: 'currentPhase', label: 'Which phase is the program in now?', type: 'select', options: LC.PHASES.map((x) => ({ value: String(x.n), label: `${x.n}. ${x.name}` })), full: true },
+      ],
+      submitLabel: 'Start',
+      onSave: (v) => {
+        const lc = LC.newLifecycle(d.program, v.playbookId);
+        lc.currentPhase = Number(v.currentPhase) || 1;
+        saveLc(lc);
+        toast('Guided lifecycle started. Nothing is marked complete until you mark it.');
+        location.hash = `#/guided/${d.program}/${lc.currentPhase}`;
+      },
+    });
+  },
+  'guided-playbook': (d) => {
+    const lc = lcOf(d.program);
+    openForm({
+      title: 'Change playbook',
+      intro: 'Your answers and statuses are kept for any checklist items the new playbook shares. Items you added yourself are kept.',
+      values: { playbookId: lc.playbookId },
+      fields: [{ name: 'playbookId', label: 'Playbook', type: 'select', options: LC.allPlaybooks(st()).map((pb) => ({ value: pb.id, label: pb.name })), full: true }],
+      onSave: (v) => { const x = clone(lc); x.playbookId = v.playbookId; saveLc(x); toast('Playbook changed.'); },
+    });
+  },
+  'guided-set-current': (d) => { const x = clone(lcOf(d.program)); x.currentPhase = Number(d.phase); saveLc(x); toast(`Phase ${d.phase} is now the current phase.`); },
+  'guided-unskip': (d) => { delete ui.guided.skipped[`${d.program}:${d.phase}`]; render(); },
+  'guided-answer': (d) => {
+    const p = find('programs', d.program);
+    const x = clone(lcOf(d.program));
+    const ph = LC.PHASES.find((ph2) => LC.phaseItems(st(), x, ph2.id).some((it) => it.key === d.key));
+    const it = LC.phaseItems(st(), x, ph.id).find((i) => i.key === d.key);
+    const skey = `${d.program}:${ph.id}`;
+    if (d.mode === 'skip') {
+      (ui.guided.skipped[skey] = ui.guided.skipped[skey] || new Set()).add(d.key);
+      render(); return;
+    }
+    const answer = ($('#gq-answer')?.value || '').trim();
+    const owner = ($('#gq-owner')?.value || '').trim();
+    const due = $('#gq-due')?.value || '';
+    if (due && !L.isISODate(due)) { toast('Enter a valid due date.', 'warn'); return; }
+    if (it.type === 'date' && answer && !L.isISODate(answer)) { toast('Enter a valid date.', 'warn'); return; }
+    const cur = LC.itemState(x, d.key);
+    const apply = (status, reason) => {
+      x.items = x.items || {};
+      x.items[d.key] = { ...cur, owner, dueDate: due, status: status || cur.status, ...(it.field ? {} : { notes: answer }), ...(reason !== undefined ? { blockedReason: reason } : {}), updatedAt: new Date().toISOString() };
+      if (it.field && answer !== (p[it.field] || '')) S.upsert('programs', { id: p.id, [it.field]: answer });
+      saveLc(x);
+    };
+    if (d.mode === 'blocked') {
+      openForm({
+        title: `Mark blocked: ${it.label}`,
+        values: { reason: cur.blockedReason || '' },
+        fields: [{ name: 'reason', label: 'What is blocking it?', type: 'textarea', required: true, full: true }],
+        submitLabel: 'Mark blocked',
+        onSave: (v) => { apply('blocked', v.reason); toast('Marked blocked.'); },
+      });
+      return;
+    }
+    if (d.mode === 'na') { apply('na'); toast('Marked not applicable.'); return; }
+    if (d.mode === 'done') { apply('done'); toast('Saved and marked complete.'); return; }
+    apply(null); toast('Answer saved. The item stays open until you mark it complete.');
+    (ui.guided.skipped[skey] = ui.guided.skipped[skey] || new Set()).add(d.key);
+    render();
+  },
+  'guided-item-edit': (d) => {
+    const p = find('programs', d.program);
+    const lc0 = lcOf(d.program);
+    const ph = LC.PHASES.find((ph2) => LC.phaseItems(st(), lc0, ph2.id).some((it2) => it2.key === d.key));
+    const it = LC.phaseItems(st(), lc0, ph.id).find((i) => i.key === d.key);
+    const cur = LC.itemState(lc0, d.key);
+    openForm({
+      title: it.label,
+      intro: `${esc(it.q)}${it.field ? ` <span class="small muted">The answer is saved to the program.</span>` : ''}`,
+      values: { status: d.presetStatus || cur.status, answer: LC.itemAnswer(p, lc0, it), owner: cur.owner, dueDate: cur.dueDate, blockedReason: cur.blockedReason },
+      fields: [
+        { name: 'answer', label: 'Answer / notes', type: it.type === 'date' ? 'date' : 'textarea', rows: 4, full: true },
+        { name: 'status', label: 'Status', type: 'select', options: LC.ITEM_STATUSES, help: 'Only you set this. Nothing is marked complete automatically.' },
+        { name: 'owner', label: 'Owner' },
+        { name: 'dueDate', label: 'Due date', type: 'date' },
+        { name: 'blockedReason', label: 'Blocker (if blocked)', type: 'textarea', full: true },
+      ],
+      validate: (v) => (v.status === 'blocked' && blank(v.blockedReason) ? { message: 'Describe what is blocking it.', field: 'blockedReason' } : null),
+      onSave: (v) => {
+        const x = clone(lcOf(d.program));
+        x.items = x.items || {};
+        x.items[d.key] = { ...cur, status: v.status, owner: v.owner, dueDate: v.dueDate, blockedReason: v.blockedReason, ...(it.field ? {} : { notes: v.answer }), updatedAt: new Date().toISOString() };
+        if (it.field && v.answer !== (p[it.field] || '')) S.upsert('programs', { id: p.id, [it.field]: v.answer });
+        saveLc(x); toast('Checklist item saved.');
+      },
+    });
+  },
+  'guided-add-item': (d) => {
+    openForm({
+      title: 'Add checklist item',
+      intro: 'Add a step your organization requires. It is added to this program only. To change a playbook for every program, customize it on the Templates page.',
+      fields: [
+        { name: 'label', label: 'Item', required: true, full: true, placeholder: 'e.g. Architecture review board approval' },
+        { name: 'q', label: 'Question to ask', full: true, placeholder: 'e.g. When is the review, and who presents?' },
+      ],
+      onSave: (v) => {
+        const x = clone(lcOf(d.program));
+        x.extra = x.extra || {};
+        const list = x.extra[d.phase] = x.extra[d.phase] || [];
+        list.push({ key: `x-${S.newId()}`, label: v.label, q: v.q || `What is the status of: ${v.label}?` });
+        saveLc(x); toast('Item added.');
+      },
+    });
+  },
+  'guided-remove-item': (d) => askConfirm('Remove this item you added? Its answer and status are removed too.', 'Remove item', () => {
+    const x = clone(lcOf(d.program));
+    x.extra[d.phase] = (x.extra[d.phase] || []).filter((i) => i.key !== d.key);
+    if (x.items) delete x.items[d.key];
+    saveLc(x); toast('Item removed.');
+  }),
+  'guided-status': (d) => {
+    const x = clone(lcOf(d.program));
+    const cur = LC.itemState(x, d.key);
+    if (d.value === 'blocked' && blank(cur.blockedReason)) { render(); ACTIONS['guided-item-edit']({ program: d.program, key: d.key, presetStatus: 'blocked' }); toast('Describe the blocker, then save.', 'warn'); return; }
+    x.items = x.items || {};
+    x.items[d.key] = { ...cur, status: d.value, updatedAt: new Date().toISOString() };
+    saveLc(x); toast(`Marked ${LC.statusLabel(d.value).toLowerCase()}.`);
+  },
+  'guided-to-roadmap': (d) => {
+    const lc0 = lcOf(d.program);
+    const ph = LC.PHASES.find((ph2) => LC.phaseItems(st(), lc0, ph2.id).some((it2) => it2.key === d.key));
+    const it = LC.phaseItems(st(), lc0, ph.id).find((i) => i.key === d.key);
+    const cur = LC.itemState(lc0, d.key);
+    itemForm(null, { kind: 'Action', programId: d.program, name: it.label, description: `From guided lifecycle, phase ${ph.n}: ${ph.name}. ${it.q}`, owner: cur.owner, dueDate: cur.dueDate });
+  },
+  'guided-link': (d) => {
+    S.setSetting('focusProgramId', d.program);
+    const go = { measures: () => { ui.reports.tab = 'measures'; return '#/reports'; }, reports: () => { ui.reports.tab = 'reports'; return '#/reports'; }, stakeholders: () => { ui.stakeholders.tab = 'register'; return '#/stakeholders'; },
+      raci: () => { ui.stakeholders.tab = 'raci'; return '#/stakeholders'; }, program: () => `#/programs/${d.program}`, roadmap: () => '#/roadmap', raid: () => '#/raid', decisions: () => '#/decisions' }[d.link];
+    location.hash = go();
+  },
+  'guided-draft-save': (d) => {
+    const x = clone(lcOf(d.program));
+    x.drafts = x.drafts || {};
+    x.drafts[d.phase] = { text: $('#gd-text').value, savedAt: new Date().toISOString() };
+    delete ui.guided.unsaved[`${d.program}:${d.phase}`];
+    saveLc(x); toast('Draft saved.');
+  },
+  'guided-draft-rebuild': (d) => askConfirm('Replace the draft text with a fresh draft from current data? Your edits will be lost unless you export them first.', 'Rebuild draft', () => {
+    const x = clone(lcOf(d.program));
+    if (x.drafts) delete x.drafts[d.phase];
+    delete ui.guided.unsaved[`${d.program}:${d.phase}`];
+    saveLc(x); toast('Draft rebuilt from current data. Save it to keep your edits from now on.');
+  }),
+  'guided-draft-md': (d) => {
+    const ph = LC.PHASES.find((x) => x.id === d.phase);
+    download(`${safeName(programName(d.program))}-${safeName(ph.draftTitle)}-${today()}.md`, $('#gd-text').value, 'text/markdown;charset=utf-8', 'Markdown saved.');
+  },
+  'guided-draft-copy': async () => { const ok = await copyText($('#gd-text').value); toast(ok ? 'Draft copied.' : 'Copy failed. Use Export Markdown instead.', ok ? 'ok' : 'warn'); },
+
+  // ----- playbooks on the Templates page
+  'playbook-customize': (d) => {
+    const src = LC.getPlaybook(st(), d.id);
+    openForm({
+      title: src.builtIn ? `Customize: ${src.name}` : `Edit: ${src.name}`,
+      intro: 'One checklist item per line: <code>Phase number | Item | Question to ask</code>. Delete lines you don’t need, rename items, or add your organization’s own steps.',
+      values: { name: src.builtIn ? `${src.name} (my version)` : src.name, description: src.builtIn ? `Based on ${src.name}.` : (src.description || ''), text: LC.playbookToText(src) },
+      fields: [
+        { name: 'name', label: 'Playbook name', required: true, full: true },
+        { name: 'description', label: 'Description', full: true },
+        { name: 'text', label: 'Checklist items', type: 'textarea', rows: 16, full: true, help: `Phases: ${LC.PHASES.map((x) => `${x.n} ${x.short}`).join(' · ')}` },
+      ],
+      validate: (v) => { const r = LC.parsePlaybookText(v.text, src); return r.errors.length ? { message: r.errors.slice(0, 3).join(' '), field: 'text' } : null; },
+      submitLabel: 'Save playbook',
+      onSave: (v) => {
+        const { phases } = LC.parsePlaybookText(v.text, src);
+        S.upsert('customPlaybooks', { ...(src.builtIn ? {} : { id: src.id }), name: v.name, description: v.description, area: 'My playbook', builtIn: false, guidance: true, phases });
+        toast('Playbook saved. Pick it when you start or change a guided lifecycle.');
+      },
+    });
+  },
+  'playbook-delete': (d) => {
+    const inUse = st().lifecycles.filter((l) => l.playbookId === d.id).length;
+    askConfirm(`Delete this playbook?${inUse ? ` ${plural(inUse, 'program')} using it will switch to the General playbook view; answers for matching items are kept.` : ''}`, 'Delete playbook', () => { S.remove('customPlaybooks', d.id); toast('Playbook deleted.'); });
+  },
   'new-program': () => programForm(),
   'new-project': (d) => projectForm(null, d.program || ''),
   'edit-project': (d) => projectForm(find('projects', d.id)),
@@ -1786,11 +2163,13 @@ document.addEventListener('click', (e) => {
 // Filter/search bindings (data-bind="view.key") and report draft edits.
 document.addEventListener('input', (e) => {
   const t = e.target;
+  if (t.dataset.gdraft) { ui.guided.unsaved[t.dataset.gdraft] = t.value; return; }
   if (t.dataset.draft) { setDraftValue(t.dataset.draft, t.value); return; }
   if (t.dataset.bind && t.type === 'search') { const [v, k] = t.dataset.bind.split('.'); ui[v][k] = t.value; render(); }
 });
 document.addEventListener('change', (e) => {
   const t = e.target;
+  if (t.dataset.gstatus) { ACTIONS['guided-status']({ program: t.dataset.program, key: t.dataset.gstatus, value: t.value }); return; }
   if (t.id === 'focus-select') {
     if (t.value && ui.reports.draft && ui.reports.draft.programId !== t.value) ui.reports.draft = null;
     if (t.value) ui.reports.programId = t.value;

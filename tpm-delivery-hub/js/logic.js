@@ -16,7 +16,7 @@ export const RACI_ROLES = ['R', 'A', 'C', 'I'];
 
 export const COLLECTIONS = [
   'programs', 'projects', 'workstreams', 'items', 'raid', 'decisions',
-  'stakeholders', 'raci', 'measures', 'reports', 'customTemplates',
+  'stakeholders', 'raci', 'measures', 'reports', 'customTemplates', 'lifecycles', 'customPlaybooks',
 ];
 
 export const DEFAULT_SETTINGS = { upcomingDays: 14, recentMeasureDays: 30, focusProgramId: '' };

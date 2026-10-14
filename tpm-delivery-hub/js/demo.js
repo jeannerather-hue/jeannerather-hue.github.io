@@ -1,7 +1,7 @@
 // FICTIONAL demo data. All people, teams, and programs are invented for
 // exploring the app. Every record carries isDemo: true so it can be removed.
 // Dates are relative to "today" so overdue and upcoming flags show up.
-import { addDays, todayISO } from './logic.js?v=1791994907';
+import { addDays, todayISO } from './logic.js?v=1791999075';
 
 export function buildDemoData(today = todayISO()) {
   const d = (n) => addDays(today, n);
@@ -214,5 +214,25 @@ export function buildDemoData(today = todayISO()) {
     }, -7),
   ];
 
-  return { programs, projects, workstreams, items, raid, decisions, stakeholders, raci, measures, reports, customTemplates: [] };
+  const done = (notes, extra = {}) => ({ status: 'done', notes, ...extra });
+  const lifecycles = [base('lc-demo-p1', {
+    programId: 'demo-p1', playbookId: 'edp-mdm', currentPhase: 5, extra: {}, drafts: {},
+    items: {
+      'intake-problem': done('Customer records are duplicated across billing, sales and service systems (fictional example).'),
+      'intake-why': done('Duplicate records cause billing errors and slow onboarding (fictional example).'),
+      'intake-sponsor': { status: 'done' }, 'intake-tpm': { status: 'done' },
+      'mdm-domains': done('Customer domain only for this release.'),
+      'mdm-sources': done('Three priority sources: A, B and C (fictional).'),
+      'out-objective': { status: 'done' }, 'out-outcome': { status: 'done' }, 'out-measures': { status: 'done' },
+      'gov-stakeholders': { status: 'done' },
+      'gov-raci': { status: 'open', notes: 'One activity still has no Accountable owner.', owner: 'Alex Rivera (fictional)' },
+      'mdm-owners': done('Riley Park (fictional) is the data owner for the customer domain.'),
+      'plan-ws': { status: 'done' }, 'plan-milestones': { status: 'done' },
+      'mdm-onboarding': { status: 'blocked', blockedReason: 'Source B test extract not delivered (fictional).', owner: 'Sam Carter (fictional)', dueDate: d(5) },
+      'mdm-model': done('Target data model approved by the data governance lead (fictional).'),
+      'mdm-match': done('Billing system wins for address; most recent wins for contact details.'),
+    },
+  })];
+
+  return { programs, projects, lifecycles, workstreams, items, raid, decisions, stakeholders, raci, measures, reports, customTemplates: [] };
 }

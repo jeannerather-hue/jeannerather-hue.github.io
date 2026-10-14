@@ -1,6 +1,6 @@
 // Local-only data store. Everything lives in this browser's localStorage
 // under STORAGE_KEY. Nothing is sent over the network.
-import { COLLECTIONS, emptyState, normalizeState, todayISO, isBlank } from './logic.js?v=1791994907';
+import { COLLECTIONS, emptyState, normalizeState, todayISO, isBlank } from './logic.js?v=1791999075';
 
 export const STORAGE_KEY = 'tpm-delivery-hub:v1';
 
@@ -164,6 +164,10 @@ export function hasDemo() {
 
 export function removeDemo() {
   COLLECTIONS.forEach((c) => { state[c] = state[c].filter((r) => !r.isDemo); });
+  // Drop anything the user attached to a demo program (it would be orphaned).
+  const ids = new Set(state.programs.map((p) => p.id));
+  COLLECTIONS.filter((c) => !['programs', 'customTemplates', 'customPlaybooks'].includes(c))
+    .forEach((c) => { state[c] = state[c].filter((r) => !r.programId || ids.has(r.programId)); });
   if (state.settings.focusProgramId && !state.programs.some((p) => p.id === state.settings.focusProgramId)) {
     state.settings.focusProgramId = '';
   }

@@ -1,6 +1,6 @@
 // Starter templates. Generic, editable scaffolding only — no real company,
 // vendor, or project claims. Measure values are left blank on purpose.
-import { addDays, isISODate, RAID_TYPES } from './logic.js?v=1791994907';
+import { addDays, isISODate, RAID_TYPES } from './logic.js?v=1791999075';
 
 export const BUILTIN_TEMPLATES = [
   {
