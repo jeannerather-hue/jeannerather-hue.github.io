@@ -54,7 +54,7 @@ window.PORTFOLIO = {
     {
       id: "planning-forecasting",
       title: "Shortening the planning cycle",
-      org: "Large-scale technology organization",
+      org: "Amazon",
       role: "Senior Program Manager, workforce planning and labor forecasting. I led the redesign and coordinated engineering, analytics, data science, and operations partners.",
       focus: ["ops", "tpm", "data-ai", "bizops"],
       metrics: [{ value: "~40%", label: "shorter planning cycle" }],
@@ -307,7 +307,7 @@ window.PORTFOLIO = {
     { org: "Apple", title: "Program Manager – Enterprise Data & Technology Program Delivery (Contract)", dates: "Aug 2024 – Present" },
     { org: "TRAC Associates", title: "Senior Program Manager – Multi-Stakeholder Program Delivery & Governance (Contract)", dates: "Aug 2024 – Oct 2025" },
     { org: "Classic Impressions", title: "Operations & Program Manager – Systems, Vendor & Process Delivery", dates: "Jan 2023 – Aug 2024" },
-    { org: "Large-scale technology organization", title: "Senior Program Manager – Workforce Planning & Labor Forecasting Systems", dates: "Oct 2020 – Jan 2023" },
+    { org: "Amazon", title: "Senior Program Manager – Workforce Planning & Labor Forecasting Systems", dates: "Oct 2020 – Jan 2023" },
     { org: "U.S. Renal Care", title: "Regional Program Manager – Regional Operations, Systems & Quality Programs", dates: "Apr 2018 – Sep 2020" },
     { org: "DaVita Kidney Care", title: "Senior Program Operations Director – Multi-Site Operations, Systems & Quality Programs", dates: "May 2008 – Mar 2018" },
   ],
