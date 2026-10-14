@@ -1,7 +1,7 @@
 // FICTIONAL demo data. All people, teams, and programs are invented for
 // exploring the app. Every record carries isDemo: true so it can be removed.
 // Dates are relative to "today" so overdue and upcoming flags show up.
-import { addDays, todayISO } from './logic.js';
+import { addDays, todayISO } from './logic.js?v=1791994907';
 
 export function buildDemoData(today = todayISO()) {
   const d = (n) => addDays(today, n);

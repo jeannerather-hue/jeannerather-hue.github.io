@@ -1,8 +1,8 @@
 // TPM Delivery Hub — UI layer (hash router, views, forms, exports).
-import * as L from './logic.js';
-import * as S from './store.js';
-import { BUILTIN_TEMPLATES, templateToText, parseTemplateText, instantiateTemplate } from './templates.js';
-import { buildDemoData } from './demo.js';
+import * as L from './logic.js?v=1791994907';
+import * as S from './store.js?v=1791994907';
+import { BUILTIN_TEMPLATES, templateToText, parseTemplateText, instantiateTemplate } from './templates.js?v=1791994907';
+import { buildDemoData } from './demo.js?v=1791994907';
 
 // ---------------------------------------------------------------- helpers
 const NE = L.NOT_ENTERED;
