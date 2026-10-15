@@ -1,9 +1,10 @@
 // TPM Delivery Hub — UI layer (hash router, views, forms, exports).
-import * as L from './logic.js?v=1791999075';
-import * as S from './store.js?v=1791999075';
-import { BUILTIN_TEMPLATES, templateToText, parseTemplateText, instantiateTemplate } from './templates.js?v=1791999075';
-import { buildDemoData } from './demo.js?v=1791999075';
-import * as LC from './lifecycle.js?v=1791999075';
+import * as L from './logic.js?v=1792079564';
+import * as S from './store.js?v=1792079564';
+import { BUILTIN_TEMPLATES, templateToText, parseTemplateText, instantiateTemplate } from './templates.js?v=1792079564';
+import { buildDemoData } from './demo.js?v=1792079564';
+import * as LC from './lifecycle.js?v=1792079564';
+import * as F from './finance.js?v=1792079564';
 
 // ---------------------------------------------------------------- helpers
 const NE = L.NOT_ENTERED;
@@ -40,6 +41,7 @@ const updatedCell = (r) => (r.updatedAt ? `<time datetime="${esc(L.dateOf(r.upda
 const ICONS = {
   overview: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
   guided: '<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><path d="M5 8v8"/><path d="M10 6h10"/><path d="M10 12h10"/><path d="M10 18h10"/>',
+  finance: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/><path d="M15 3v3"/><path d="M9 3v3"/>',
   projects: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h5"/><path d="M8 16h8"/>',
   programs: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   roadmap: '<path d="M4 21V4"/><path d="M4 4h12l-2 4 2 4H4"/>',
@@ -58,6 +60,7 @@ const NAV = [
   { id: 'guided', label: 'Guided Lifecycle' },
   { id: 'programs', label: 'Programs' },
   { id: 'projects', label: 'Projects' },
+  { id: 'finance', label: 'Budget & Finance' },
   { id: 'roadmap', label: 'Roadmap & Milestones' },
   { id: 'raid', label: 'RAID Log' },
   { id: 'decisions', label: 'Decisions' },
@@ -72,6 +75,7 @@ const NAV2 = [
 
 // Per-view UI state (filters, sorting, tabs). Session only.
 const ui = {
+  finance: { pid: '', from: '', to: '', ws: '', cat: '', project: '', recType: 'expenses', showArchived: false, queue: 'pending', reviewMonth: '', reviewStep: 1, summaryDraft: {} },
   guided: { skipped: {}, unsaved: {} },
   projects: { q: '', status: '', sort: 'endDate', dir: 'asc' },
   roadmap: { q: '', kind: '', status: 'open', priority: '', owner: '', ws: '', project: '', due: '', sort: 'dueDate', dir: 'asc', mode: 'table' },
@@ -733,6 +737,16 @@ function viewPrograms(route) {
   return `${pageHead('Programs', 'Each program has its own objective, workstreams, milestones and measures.', actions)}${focusNote()}<div class="card-grid">${cards}</div>`;
 }
 
+function programFinanceCard(pid) {
+  const b = F.budgetFor(st(), pid);
+  if (!b) return `<section class="card"><div class="panel-head"><h2>Budget &amp; Finance</h2><a class="btn small" href="#/finance/${pid}">Set up budget</a></div><p class="panel-empty">No budget recorded for this program yet.</p></section>`;
+  const t = F.computeProgram(st(), pid, {}, today()).totals;
+  const q = F.reviewQueue(st(), pid, today(), b.varianceThreshold ?? 5);
+  return `<section class="card"><div class="panel-head"><h2>Budget &amp; Finance</h2><a class="btn small" href="#/finance/${pid}">Open Budget &amp; Finance</a></div>
+    <dl class="facts compact fin-facts"><div><dt>Current approved budget</dt><dd>${mny(t.currentTotal, b.currency)}</dd></div><div><dt>Actuals</dt><dd>${mny(t.actuals, b.currency)}</dd></div><div><dt>Open commitments</dt><dd>${mny(t.open, b.currency)}</dd></div>
+    <div><dt>Estimate at completion</dt><dd>${mny(t.eac, b.currency)}</dd></div><div><dt>Forecast variance</dt><dd>${mny(t.variance, b.currency)} ${varBadge(t.variance)}</dd></div><div><dt>Needs attention</dt><dd>${q.pending.length} pending · ${q.overdue.length} overdue</dd></div></dl></section>`;
+}
+
 function viewProgramDetail(id) {
   const s = st();
   const p = s.programs.find((x) => x.id === id);
@@ -762,7 +776,7 @@ function viewProgramDetail(id) {
   const mRows = measures.map((m) => measureRow(m, false)).join('');
 
   return `${pageHead(esc(p.name), `${p.isDemo ? '<span class="tag demo">Fictional demo program</span> ' : ''}Program workspace`,
-      `${btn('Edit program', 'edit-program', { id }, 'btn')} <a class="btn" href="#/guided/${id}">Guided lifecycle</a> ${btn('Weekly status report', 'report-new', { program: id }, 'btn primary')}`)}
+      `${btn('Edit program', 'edit-program', { id }, 'btn')} <a class="btn" href="#/guided/${id}">Guided lifecycle</a> <a class="btn" href="#/finance/${id}">Budget &amp; Finance</a> ${btn('Weekly status report', 'report-new', { program: id }, 'btn primary')}`)}
     <p class="breadcrumb"><a href="#/programs">Programs</a> / ${esc(p.name)}</p>
     <section class="card status-card">
       <div class="status-line">${healthBadge(p.status)} <span>${show(p.statusReason)}</span></div>
@@ -783,6 +797,7 @@ function viewProgramDetail(id) {
       </ul>
     </section>
 
+    ${programFinanceCard(id)}
     <div class="two-col">
       <section class="card"><h2>Key assumptions</h2><p>${showML(p.assumptions)}</p></section>
       <section class="card"><h2>Scope boundaries</h2>
@@ -1103,6 +1118,465 @@ function viewGuidedProgram(pid, n) {
     <div class="guided-grid">${qCard}${nextCard}</div>
     ${checklist}
     ${draftCard}`;
+}
+
+// ---------------------------------------------------------------- view: budget & finance
+const FIN_TABS = [
+  ['overview', 'Program view'], ['monthly', 'Monthly view'], ['records', 'Records'], ['changes', 'Reallocations & baseline'],
+  ['queue', 'Review queue'], ['review', 'Monthly review'], ['data', 'Import & export'], ['help', 'How it works'],
+];
+const REC_TYPES = [
+  ['expenses', 'Actual expenses'], ['commitments', 'PR/POs'], ['changeOrders', 'Change orders'], ['forecasts', 'Forecast-to-complete'], ['phasing', 'Budget phasing'],
+];
+Object.assign(STATUS_CLASS, { Draft: 'neutral', Requested: 'warn', Approved: 'ok', Rejected: 'muted', Proposed: 'neutral', 'Pending approval': 'warn' });
+
+const finPid = (route) => {
+  const s = st();
+  const pid = route?.id || ui.finance.pid || focusId() || s.programs[0]?.id || '';
+  return s.programs.some((p) => p.id === pid) ? pid : (s.programs[0]?.id || '');
+};
+const finCur = (pid) => F.budgetFor(st(), pid)?.currency || 'USD';
+function money(v, cur) {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return NE;
+  try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: cur || 'USD', maximumFractionDigits: 0 }).format(v); } catch { return `${cur || ''} ${Math.round(v).toLocaleString()}`; }
+}
+const mny = (v, cur) => (typeof v === 'number' && Number.isFinite(v) ? esc(money(v, cur)) : ne);
+const pctTxt = (v) => (typeof v === 'number' && Number.isFinite(v) ? `${v > 0 ? '+' : ''}${(v * 100).toFixed(1)}%` : NE);
+function varBadge(v) {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return '';
+  if (Math.abs(v) < 0.5) return '<span class="badge s-neutral">On budget</span>';
+  return v > 0 ? '<span class="badge s-bad"><span aria-hidden="true">▲</span> Over budget</span>' : '<span class="badge s-ok"><span aria-hidden="true">▼</span> Under budget</span>';
+}
+const finFilters = () => ({ from: ui.finance.from, to: ui.finance.to, ws: ui.finance.ws, cat: ui.finance.cat, project: ui.finance.project });
+const wsOptsFor = (pid) => st().workstreams.filter((w) => w.programId === pid).map((w) => ({ value: w.id, label: w.name }));
+const prOptsFor = (pid) => st().projects.filter((x) => x.programId === pid).map((x) => ({ value: x.id, label: x.name }));
+const catOptsFor = (pid) => F.categoriesFor(F.budgetFor(st(), pid));
+const finMonths = (pid) => { const b = F.budgetFor(st(), pid); return b ? F.monthsBetween(b.periodStart, b.periodEnd) : []; };
+
+function finBanner(pid) {
+  const p = st().programs.find((x) => x.id === pid);
+  return `<div class="fin-banner" role="note"><strong>Stored in this browser only.</strong> Budget & Finance records are saved on this device, not in company finance or procurement systems, and are not enterprise-secure. Avoid confidential figures your organization doesn’t allow here, and export backups regularly.${p?.isDemo ? ' <span class="tag demo">Fictional sample program</span>' : ''}</div>`;
+}
+
+function viewFinance(route) {
+  const s = st();
+  const head = (pid) => pageHead('Budget &amp; Finance', 'Plan and track a program budget: phasing, actuals, PR/PO commitments, change orders, forecast-to-complete, reallocations and a guided monthly review.',
+    pid ? `${btn('Edit budget', 'fin-budget', { program: pid }, 'btn')} <a class="btn ghost" href="#/programs/${pid}">Program workspace</a>` : '');
+  if (!s.programs.length) return head('') + noProgramsBox();
+  const pid = finPid(route);
+  ui.finance.pid = pid;
+  const tab = FIN_TABS.some(([k]) => k === route.sub) ? route.sub : 'overview';
+  const picker = `<div class="toolbar fin-picker"><div class="filter"><label for="fin-program">Program</label><select id="fin-program" data-finprog>${s.programs.map((p) => `<option value="${p.id}"${p.id === pid ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></div></div>`;
+  const b = F.budgetFor(s, pid);
+  if (!b) {
+    return `${head('')}${finBanner(pid)}${picker}${emptyBox('No budget for this program yet', 'Set up the currency, budget period, approved baseline, owner and cost categories. Then add monthly phasing, actual expenses, PR/POs, change orders and forecast-to-complete.',
+      btn('Set up budget', 'fin-budget', { program: pid }, 'btn primary'))}`;
+  }
+  const tabs = `<div class="tabs fin-tabs" role="tablist" aria-label="Budget & Finance views">${FIN_TABS.map(([k, l]) => `<a role="tab" href="#/finance/${pid}/${k}" aria-selected="${k === tab}" id="fintab-${k}">${l}</a>`).join('')}</div>`;
+  const body = { overview: finOverview, monthly: finMonthly, records: finRecords, changes: finChanges, queue: finQueue, review: finReview, data: finData, help: finHelp }[tab](pid, b);
+  return `${head(pid)}${finBanner(pid)}${picker}${finBudgetCard(pid, b)}${tabs}<div role="tabpanel" aria-labelledby="fintab-${tab}" class="fin-panel">${body}</div>`;
+}
+
+function finBudgetCard(pid, b) {
+  const t = F.computeProgram(st(), pid, {}, today()).totals;
+  return `<section class="card fin-budget-card" aria-label="Budget summary"><dl class="facts compact fin-facts">
+    <div><dt>Currency</dt><dd>${esc(b.currency)}</dd></div>
+    <div><dt>Budget period</dt><dd>${esc(F.monthLabel(b.periodStart))} – ${esc(F.monthLabel(b.periodEnd))}</dd></div>
+    <div><dt>Budget owner</dt><dd>${show(b.owner)}</dd></div>
+    <div><dt>Original approved baseline</dt><dd>${mny(t.baseline, b.currency)}</dd></div>
+    <div><dt>Current approved budget</dt><dd>${mny(t.currentTotal, b.currency)}</dd></div>
+    <div><dt>Material variance threshold</dt><dd>${esc(b.varianceThreshold ?? 5)}%</dd></div>
+  </dl></section>`;
+}
+
+function finFilterBar(pid, { period = true } = {}) {
+  const f = ui.finance;
+  const months = finMonths(pid);
+  const sel = (key, label, opts, empty) => `<div class="filter"><label for="ff-${key}">${label}</label><select id="ff-${key}" data-finfilter="${key}"><option value="">${empty}</option>${opts.map((o) => `<option value="${esc(o.value)}"${f[key] === o.value ? ' selected' : ''}>${esc(o.label)}</option>`).join('')}</select></div>`;
+  const mo = months.map((m) => ({ value: m, label: F.monthLabel(m) }));
+  return `<div class="toolbar" role="group" aria-label="Filters">
+    ${period ? sel('from', 'From month', mo, 'Start of budget') + sel('to', 'To month', mo, 'End of budget') : ''}
+    ${sel('ws', 'Workstream', wsOptsFor(pid), 'All workstreams')}
+    ${sel('cat', 'Cost category', catOptsFor(pid).map((c) => ({ value: c, label: c })), 'All categories')}
+    ${sel('project', 'Project', prOptsFor(pid), 'All projects')}
+    <div class="filter filter-btns">${btn('Clear filters', 'fin-clear', {}, 'btn ghost small')}</div></div>`;
+}
+
+function finKpi(label, value, cur, formula, drill, extra = '') {
+  return `<li class="kpi fin-kpi"><div class="kpi-static">
+    <span class="kpi-label">${label}</span><span class="kpi-num fin-num">${mny(value, cur)}</span>${extra}
+    <details class="fin-formula"><summary>How it’s calculated</summary><p>${formula}</p></details>
+    ${drill ? `<button type="button" class="link small" data-action="fin-drill" data-kind="${drill}">Show records</button>` : ''}</div></li>`;
+}
+
+function finOverview(pid, b) {
+  const cur = b.currency;
+  const comp = F.computeProgram(st(), pid, finFilters(), today());
+  const t = comp.totals;
+  const m = (v) => `<strong>${esc(money(v, cur))}</strong>`;
+  const kpis = `<ul class="kpis fin-kpis" aria-label="Budget position">
+    ${finKpi('Current approved budget', t.budget, cur, ui.finance.from || ui.finance.to ? 'Monthly phasing for the selected months.' : (ui.finance.ws || ui.finance.cat) ? 'Phasing for this filter plus approved reallocations into or out of it.' : `Original baseline ${m(t.baseline)} + approved increases − approved decreases = ${m(t.budget)}. Reallocations move budget without changing the total.`, 'budget')}
+    ${finKpi('Actuals', t.actuals, cur, `Sum of recorded expenses = ${m(t.actuals)}.`, 'actuals')}
+    ${finKpi('Open commitments', t.open, cur, `For each Approved or Open PR/PO: original amount + approved change orders − amount spent or invoiced (never below zero) = ${m(t.open)}. The spent part is already in actuals, so it isn’t counted again.`, 'open')}
+    ${finKpi('Forecast-to-complete', t.ftc, cur, `Sum of forecast lines for expected future costs not already in actuals or open commitments = ${m(t.ftc)}.`, 'ftc')}
+    ${finKpi('Estimate at completion', t.eac, cur, `Actuals ${m(t.actuals)} + open commitments ${m(t.open)} + forecast-to-complete ${m(t.ftc)} = ${m(t.eac)}.`, '')}
+    ${finKpi('Forecast variance', t.variance, cur, `EAC ${m(t.eac)} − current approved budget ${m(t.budget)} = ${m(t.variance)}; ÷ budget = <strong>${pctTxt(t.variancePct)}</strong>. Positive means over budget.`, '', `<span class="fin-var">${esc(pctTxt(t.variancePct))} ${varBadge(t.variance)}</span>`)}
+    ${finKpi('Uncommitted budget remaining', t.uncommitted, cur, `Budget ${m(t.budget)} − actuals ${m(t.actuals)} − open commitments ${m(t.open)} = ${m(t.uncommitted)}.`, '')}
+    ${finKpi('Projected budget remaining', t.projected, cur, `Budget ${m(t.budget)} − EAC ${m(t.eac)} = ${m(t.projected)}.`, '')}
+  </ul>`;
+  const notes = comp.notes.length ? `<div class="callout fin-notes">${comp.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '';
+  const brk = (title, dim, keys, label) => {
+    const rows = comp.breakdown(dim, keys.map((k) => k.value));
+    return `<section class="card"><h2>${title}</h2>${finTable(rows.map((r) => ({ ...r, label: keys.find((k) => k.value === r.key)?.label || r.key })), cur, label)}</section>`;
+  };
+  return `${finFilterBar(pid)}${notes}${kpis}
+    ${ui.finance.cat ? '' : brk('By cost category', 'cat', catOptsFor(pid).map((c) => ({ value: c, label: c })), 'Category')}
+    ${ui.finance.ws ? '' : brk('By workstream', 'ws', wsOptsFor(pid), 'Workstream')}
+    <div class="btn-row">${btn('Export this view to CSV', 'fin-export-view', {}, 'btn ghost small')}</div>`;
+}
+
+function finTable(rows, cur, label) {
+  if (!rows.length) return '<p class="panel-empty">Nothing to show.</p>';
+  const c = (v, l) => `<td class="num" data-label="${l}">${mny(v, cur)}</td>`;
+  return `<div class="table-wrap"><table class="data fin-table"><thead><tr><th scope="col">${label}</th><th scope="col">Budget</th><th scope="col">Actuals</th><th scope="col">Open commitments</th><th scope="col">Forecast-to-complete</th><th scope="col">EAC</th><th scope="col">Variance</th><th scope="col">Uncommitted remaining</th><th scope="col">Projected remaining</th></tr></thead>
+    <tbody>${rows.map((r) => `<tr class="${r.variance > 0.5 ? 'high' : ''}"><th scope="row" data-label="${label}">${esc(r.label)}</th>${c(r.budget, 'Budget')}${c(r.actuals, 'Actuals')}${c(r.open, 'Open commitments')}${c(r.ftc, 'Forecast-to-complete')}${c(r.eac, 'EAC')}
+      <td class="num" data-label="Variance">${mny(r.variance, cur)}<br><small>${esc(pctTxt(r.variancePct))}</small> ${varBadge(r.variance)}</td>${c(r.uncommitted, 'Uncommitted remaining')}${c(r.projected, 'Projected remaining')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+function finMonthly(pid, b) {
+  const cur = b.currency;
+  const comp = F.computeProgram(st(), pid, finFilters(), today());
+  let cb = 0, ce = 0;
+  const rows = comp.monthly.map((r) => {
+    cb = cb === null || r.budget === null ? null : cb + r.budget;
+    ce = ce === null || r.eac === null ? null : ce + r.eac;
+    return { ...r, cumBudget: cb, cumEac: ce };
+  });
+  const c = (v, l) => `<td class="num" data-label="${l}">${mny(v, cur)}</td>`;
+  const thisMonth = today().slice(0, 7);
+  return `${finFilterBar(pid)}
+    <p class="small muted">Each month shows the phased budget, recorded actuals, open commitments by expected date, forecast-to-complete and EAC for that month. Open commitments without an expected date appear only in the program view.</p>
+    <div class="table-wrap"><table class="data fin-table"><caption class="sr-only">Monthly budget, actuals, commitments and forecast</caption>
+    <thead><tr><th scope="col">Month</th><th scope="col">Budget</th><th scope="col">Actuals</th><th scope="col">Open commitments</th><th scope="col">Forecast-to-complete</th><th scope="col">EAC</th><th scope="col">Variance</th><th scope="col">Cumulative budget</th><th scope="col">Cumulative EAC</th></tr></thead>
+    <tbody>${rows.map((r) => `<tr class="${r.month === thisMonth ? 'pending' : ''}"><th scope="row" data-label="Month">${esc(F.monthLabel(r.month))}${r.month === thisMonth ? ' <span class="tag">This month</span>' : ''}</th>${c(r.budget, 'Budget')}${c(r.actuals, 'Actuals')}${c(r.open, 'Open commitments')}${c(r.ftc, 'Forecast-to-complete')}${c(r.eac, 'EAC')}
+      <td class="num" data-label="Variance">${mny(r.variance, cur)} ${varBadge(r.variance)}</td>${c(r.cumBudget, 'Cumulative budget')}${c(r.cumEac, 'Cumulative EAC')}</tr>`).join('')}</tbody></table></div>
+    <div class="btn-row">${btn('Export monthly view to CSV', 'fin-export-monthly', {}, 'btn ghost small')}</div>`;
+}
+
+// ----- records
+const REC_COLS = {
+  expenses: [['date', 'Date'], ['amount', 'Amount', 'm'], ['category', 'Category'], ['ws', 'Workstream'], ['project', 'Project'], ['description', 'Description'], ['source', 'Source'], ['po', 'Linked PR/PO']],
+  commitments: [['ref', 'Reference'], ['type', 'Type'], ['vendor', 'Vendor'], ['owner', 'Owner'], ['category', 'Category'], ['ws', 'Workstream'], ['originalAmount', 'Original', 'm'], ['cos', 'Approved COs', 'm'], ['spentAmount', 'Spent / invoiced', 'm'], ['open', 'Open commitment', 'm'], ['status', 'Status'], ['expectedDate', 'Expected date']],
+  changeOrders: [['po', 'PR/PO'], ['amount', 'Amount', 'm'], ['reason', 'Reason'], ['status', 'Status'], ['approvalDate', 'Approval date']],
+  forecasts: [['month', 'Month'], ['amount', 'Amount', 'm'], ['category', 'Category'], ['ws', 'Workstream'], ['project', 'Project'], ['basis', 'Basis']],
+  phasing: [['month', 'Month'], ['amount', 'Amount', 'm'], ['category', 'Category'], ['ws', 'Workstream']],
+};
+const poRef = (id) => st().commitments.find((p) => p.id === id)?.ref || '';
+function recValue(type, r, key) {
+  if (key === 'ws') return wsName(r.workstreamId);
+  if (key === 'project') return projName(r.projectId);
+  if (key === 'po') return poRef(type === 'changeOrders' ? r.commitmentId : r.commitmentId);
+  if (key === 'month') return F.monthLabel(r.month);
+  if (type === 'commitments' && (key === 'cos' || key === 'open')) {
+    const d = F.commitmentDetail(r, st().changeOrders.filter((c) => c.programId === r.programId));
+    return key === 'cos' ? d.approvedChangeOrders : d.open;
+  }
+  return r[key];
+}
+function finRecordsList(pid, type) {
+  const f = ui.finance;
+  const monthKey = { expenses: (r) => F.monthOf(r.date), commitments: (r) => F.monthOf(r.expectedDate), changeOrders: (r) => F.monthOf(r.approvalDate), forecasts: (r) => r.month, phasing: (r) => r.month }[type];
+  return st()[type].filter((r) => r.programId === pid && (f.showArchived || !r.archived)).filter((r) => {
+    const src = type === 'changeOrders' ? st().commitments.find((p) => p.id === r.commitmentId) || {} : r;
+    if (f.ws && (src.workstreamId || '') !== f.ws) return false;
+    if (f.cat && (src.category || '') !== f.cat) return false;
+    if (f.project && (src.projectId || '') !== f.project) return false;
+    const mk = monthKey(r);
+    if (f.from && (!mk || mk < f.from)) return false;
+    if (f.to && (!mk || mk > f.to)) return false;
+    return true;
+  });
+}
+function finRecords(pid, b) {
+  const type = ui.finance.recType;
+  const cur = b.currency;
+  const list = finRecordsList(pid, type);
+  const cols = REC_COLS[type];
+  const seg = `<div class="seg fin-seg" role="group" aria-label="Record type">${REC_TYPES.map(([k, l]) => `<button type="button" class="seg-btn" data-action="fin-rectype" data-type="${k}" aria-pressed="${k === type}">${l}</button>`).join('')}</div>`;
+  const addLabel = { expenses: 'Add expense', commitments: 'Add PR/PO', changeOrders: 'Add change order', forecasts: 'Add forecast line', phasing: 'Add phasing line' }[type];
+  const total = list.filter((r) => !r.archived).reduce((a, r) => a + (Number(type === 'commitments' ? recValue(type, r, 'open') : r.amount) || 0), 0);
+  const table = list.length ? `<div class="table-wrap"><table class="data fin-table"><caption class="sr-only">${REC_TYPES.find(([k]) => k === type)[1]}</caption>
+      <thead><tr>${cols.map(([, l]) => `<th scope="col">${l}</th>`).join('')}<th scope="col">Updated</th><th scope="col">Actions</th></tr></thead>
+      <tbody>${list.map((r) => `<tr class="${r.archived ? 'closed' : ''}">${cols.map(([k, l, kind], i) => {
+        const v = recValue(type, r, k);
+        const cell = kind === 'm' ? mny(typeof v === 'number' ? v : null, cur) : k === 'status' ? statusBadge(v) : (blank(v) ? '<span class="muted">—</span>' : esc(v));
+        return i === 0 ? `<th scope="row" data-label="${l}">${cell}${r.isDemo ? ' <span class="tag demo">Sample</span>' : ''}${r.archived ? ' <span class="tag">Archived</span>' : ''}</th>` : `<td data-label="${l}"${kind === 'm' ? ' class="num"' : ''}>${cell}</td>`;
+      }).join('')}<td data-label="Updated">${updatedCell(r)}</td>
+        <td data-label="Actions"><div class="btn-row">${btn('Edit', 'fin-edit', { type, id: r.id }, 'btn small')} ${btn(r.archived ? 'Restore' : 'Archive', 'fin-archive', { type, id: r.id }, 'btn ghost small')} ${btn('History', 'fin-history', { type, id: r.id }, 'btn ghost small')}</div></td></tr>`).join('')}</tbody></table></div>`
+    : emptyBox('No records match', type === 'phasing' ? 'Add phasing lines one at a time, or spread an annual amount evenly across the budget months.' : 'Add a record, change the filters, or import a CSV from the Import & export tab.', '');
+  return `${finFilterBar(pid)}<div class="subbar">${seg}<div class="btn-row">${btn(addLabel, 'fin-add', { type }, 'btn primary small')}${type === 'phasing' ? ` ${btn('Spread evenly across months', 'fin-spread', {}, 'btn small')}` : ''}
+      <label class="check small"><input type="checkbox" data-finarchived${ui.finance.showArchived ? ' checked' : ''}> <span>Show archived</span></label></div></div>
+    <p class="result-count">${plural(list.filter((r) => !r.archived).length, 'active record')} · total ${type === 'commitments' ? 'open commitment' : 'amount'}: <strong>${esc(money(total, cur))}</strong>. Archived records are kept for history and excluded from calculations.</p>${table}`;
+}
+
+// ----- reallocations & baseline
+const dimLabel = (pid, dim, v) => (dim === 'workstream' ? wsName(v) || v : v);
+function finChanges(pid, b) {
+  const cur = b.currency;
+  const ras = st().reallocations.filter((r) => r.programId === pid && !r.archived).sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
+  const changes = F.approvedChanges(st(), pid);
+  let running = Number(b.baseline);
+  const hist = changes.map((ch) => {
+    const delta = ch.type === 'Budget increase' ? ch.amount : ch.type === 'Budget decrease' ? -ch.amount : 0;
+    running += delta;
+    return `<tr><th scope="row" data-label="Date">${dateCell(ch.decisionDate)}</th><td data-label="Change">${esc(ch.type)}</td><td data-label="Detail">${esc(money(ch.amount, cur))}${ch.from ? ` from ${esc(dimLabel(pid, ch.dimension, ch.from))}` : ''}${ch.to ? ` to ${esc(dimLabel(pid, ch.dimension, ch.to))}` : ''} <span class="small muted">(${esc(ch.dimension === 'workstream' ? 'workstream' : 'category')})</span></td>
+      <td data-label="Approver">${show(ch.approver)}</td><td class="num" data-label="Total after">${Number.isFinite(running) ? esc(money(running, cur)) : ne}</td></tr>`;
+  }).join('');
+  const budgetEdits = (b.history || []).filter((h) => /baseline/.test(h.changes || ''));
+  return `<section class="card"><div class="panel-head"><h2>Reallocation and budget change requests</h2>${btn('New request', 'fin-ra-new', {}, 'btn primary small')}</div>
+      <p class="small muted">Proposed and pending requests do not change any budget. A change applies only when you record it as Approved, with the approver and decision date.</p>
+      ${ras.length ? `<ul class="fin-ra-list">${ras.map((r) => `<li class="card fin-ra">
+        <div class="panel-head"><strong>${esc(r.type)} · ${esc(money(r.amount, cur))}</strong>${statusBadge(r.status)}</div>
+        <p>${r.from ? `<span class="lbl">From:</span> ${esc(dimLabel(pid, r.dimension, r.from))} ` : ''}${r.to ? `<span class="lbl">To:</span> ${esc(dimLabel(pid, r.dimension, r.to))}` : ''} <span class="small muted">(${r.dimension === 'workstream' ? 'workstream' : 'cost category'})</span></p>
+        <p><span class="lbl">Reason:</span> ${esc(r.reason)}</p>
+        <p class="small"><span class="lbl">Requester:</span> ${show(r.requester)} · <span class="lbl">Approver:</span> ${show(r.approver)} · <span class="lbl">Decision date:</span> ${r.decisionDate ? fmtDate(r.decisionDate) : ne}</p>
+        <div class="btn-row">${['Proposed', 'Pending approval'].includes(r.status) ? `${btn('Approve…', 'fin-ra-decide', { id: r.id, decision: 'Approved' }, 'btn small primary')} ${btn('Reject…', 'fin-ra-decide', { id: r.id, decision: 'Rejected' }, 'btn small')}` : ''}
+          ${btn('Edit', 'fin-edit', { type: 'reallocations', id: r.id }, 'btn ghost small')} ${btn('History', 'fin-history', { type: 'reallocations', id: r.id }, 'btn ghost small')} ${btn('Archive', 'fin-archive', { type: 'reallocations', id: r.id }, 'btn ghost small')}</div></li>`).join('')}</ul>`
+        : '<p class="panel-empty">No requests yet.</p>'}</section>
+    <section class="card"><h2>Approved baseline history</h2>
+      <p>Original approved baseline: <strong>${mny(Number.isFinite(Number(b.baseline)) && b.baseline !== '' && b.baseline !== null ? Number(b.baseline) : null, cur)}</strong>. Reallocations move budget between categories or workstreams; only increases and decreases change the total.</p>
+      ${changes.length ? `<div class="table-wrap"><table class="data"><thead><tr><th scope="col">Decision date</th><th scope="col">Change</th><th scope="col">Detail</th><th scope="col">Approver</th><th scope="col">Approved total after</th></tr></thead><tbody>${hist}</tbody></table></div>` : '<p class="panel-empty">No approved changes yet.</p>'}
+      ${budgetEdits.length ? `<h3 class="h-sm">Corrections to the budget record</h3><ul class="plain small">${budgetEdits.map((h) => `<li>${esc(fmtDate(L.dateOf(h.at)))}: ${esc(h.changes)}</li>`).join('')}</ul>` : ''}
+    </section>`;
+}
+
+// ----- review queue
+function finQueue(pid, b) {
+  const cur = b.currency;
+  const q = F.reviewQueue(st(), pid, today(), b.varianceThreshold ?? 5);
+  const view = ui.finance.queue;
+  const chip = (k, label, n) => `<button type="button" class="seg-btn" data-action="fin-queue" data-q="${k}" aria-pressed="${view === k}">${label} <span class="count-pill${n ? ' bad' : ''}">${n}</span></button>`;
+  let body = '';
+  if (view === 'pending') {
+    body = q.pending.length ? `<ul class="list">${q.pending.map((p) => `<li class="list-row"><div><strong>${esc(p.kind)}</strong> ${esc(p.rec.ref || '')} ${esc(p.rec.reason || p.rec.description || '')}<div class="small muted">${esc(money(p.rec.amount ?? p.rec.originalAmount, cur))}</div></div>
+      <div class="row-meta">${statusBadge(p.rec.status)} ${p.kind === 'Reallocation' ? btn('Decide', 'fin-ra-decide', { id: p.rec.id, decision: 'Approved' }, 'btn small') : btn('Edit', 'fin-edit', { type: p.kind === 'Change order' ? 'changeOrders' : 'commitments', id: p.rec.id }, 'btn small')}</div></li>`).join('')}</ul>` : '<p class="panel-empty">Nothing awaiting approval.</p>';
+  } else if (view === 'open' || view === 'overdue') {
+    const rows = view === 'open' ? q.openPos : q.overdue;
+    body = rows.length ? `<div class="table-wrap"><table class="data fin-table"><thead><tr><th scope="col">PR/PO</th><th scope="col">Vendor</th><th scope="col">Owner</th><th scope="col">Original</th><th scope="col">Approved COs</th><th scope="col">Spent</th><th scope="col">Open commitment</th><th scope="col">Expected date</th><th scope="col"></th></tr></thead>
+      <tbody>${rows.map((d) => `<tr class="${view === 'overdue' ? 'overdue' : ''}"><th scope="row" data-label="PR/PO">${esc(d.po.ref)}</th><td data-label="Vendor">${show(d.po.vendor)}</td><td data-label="Owner">${show(d.po.owner)}</td><td class="num" data-label="Original">${mny(d.original, cur)}</td><td class="num" data-label="Approved COs">${mny(d.approvedChangeOrders, cur)}</td><td class="num" data-label="Spent">${mny(d.spent, cur)}</td><td class="num" data-label="Open">${mny(d.open, cur)}</td>
+        <td data-label="Expected">${dateCell(d.po.expectedDate)}${view === 'overdue' ? ' <span class="flag flag-overdue">Past expected date</span>' : ''}</td><td>${btn('Edit', 'fin-edit', { type: 'commitments', id: d.po.id }, 'btn small')}</td></tr>`).join('')}</tbody></table></div>` : `<p class="panel-empty">${view === 'open' ? 'No open commitments.' : 'No PR/POs past their expected date.'}</p>`;
+  } else {
+    body = q.variances.length ? finTable(q.variances.map((v) => ({ ...v, label: `${v.dim}: ${v.key}` })), cur, 'Area') : `<p class="panel-empty">No category or workstream variance at or above ${esc(b.varianceThreshold ?? 5)}%.</p>`;
+  }
+  return `<div class="seg fin-seg" role="group" aria-label="Review queue filter">${chip('pending', 'Pending approvals', q.pending.length)}${chip('open', 'Open commitments', q.openPos.length)}${chip('overdue', 'Overdue expected dates', q.overdue.length)}${chip('variances', 'Forecast variances', q.variances.length)}</div>
+    <p class="small muted">Rules: pending = reallocations Proposed or Pending approval, change orders Pending, and PR/POs Requested. Overdue = Approved or Open PR/POs with remaining commitment and an expected date before today. Variances = categories or workstreams whose forecast variance is at least ${esc(b.varianceThreshold ?? 5)}% of their budget.</p>
+    <section class="card">${body}</section>`;
+}
+
+// ----- guided monthly review
+function finReview(pid, b) {
+  const cur = b.currency;
+  const months = finMonths(pid);
+  if (!months.includes(ui.finance.reviewMonth)) ui.finance.reviewMonth = months.includes(today().slice(0, 7)) ? today().slice(0, 7) : months[0];
+  const month = ui.finance.reviewMonth;
+  const rv = F.reviewFor(st(), pid, month) || { steps: {}, explanations: {}, notes: '', summary: '' };
+  const step = ui.finance.reviewStep;
+  const comp = F.computeProgram(st(), pid, {}, today());
+  const t = comp.totals;
+  const q = F.reviewQueue(st(), pid, today(), b.varianceThreshold ?? 5);
+  const stepper = `<ol class="phase-steps fin-steps">${F.REVIEW_STEPS.map((s) => `<li class="phase-step${rv.steps?.[s.n]?.done ? ' all-done' : ''}"><a href="#/finance/${pid}/review" data-action="fin-step" data-n="${s.n}"${s.n === step ? ' aria-current="step"' : ''}><span class="ps-n">${s.n}</span><span class="ps-name">${esc(s.title)}</span><span class="ps-count">${rv.steps?.[s.n]?.done ? 'Marked done' : 'Open'}</span></a></li>`).join('')}</ol>`;
+  const S2 = F.REVIEW_STEPS[step - 1];
+  const monthEx = st().expenses.filter((e) => e.programId === pid && !e.archived && F.monthOf(e.date) === month);
+  const m = (v) => esc(money(v, cur));
+  let content = '';
+  if (step === 1) content = `<dl class="facts compact"><div><dt>Original baseline</dt><dd>${mny(t.baseline, cur)}</dd></div><div><dt>Current approved budget</dt><dd>${mny(t.currentTotal, cur)}</dd></div><div><dt>Monthly phasing total</dt><dd>${mny(t.baseline !== null && comp.phasingGap !== null ? t.baseline - comp.phasingGap : null, cur)}</dd></div></dl>
+    ${comp.notes.length ? `<div class="callout">${comp.notes.map((n) => `<p>${esc(n)}</p>`).join('')}</div>` : '<p>Monthly phasing matches the original baseline.</p>'}
+    <div class="btn-row">${btn('Edit budget', 'fin-budget', { program: pid }, 'btn small')} <a class="btn small ghost" href="#/finance/${pid}/records" data-action="fin-rectype" data-type="phasing">Open phasing</a></div>`;
+  if (step === 2) content = `<p>${plural(monthEx.length, 'expense')} recorded for ${esc(F.monthLabel(month))}, totalling ${m(monthEx.reduce((a, e) => a + (Number(e.amount) || 0), 0))}. Open commitments across the program: ${mny(t.open, cur)}.</p>
+    <div class="btn-row">${btn('Add expense', 'fin-add', { type: 'expenses' }, 'btn small primary')} <a class="btn small" href="#/finance/${pid}/records" data-action="fin-rectype" data-type="commitments">Update PR/PO spent amounts</a> <a class="btn small ghost" href="#/finance/${pid}/data">Import CSV</a></div>`;
+  if (step === 3) content = `<p>${plural(q.pending.length, 'item')} awaiting approval and ${plural(q.overdue.length, 'PR/PO')} past the expected date.</p>
+    ${q.overdue.length ? `<ul class="plain">${q.overdue.map((d) => `<li>${esc(d.po.ref)}: open ${m(d.open)}, expected ${esc(fmtDate(d.po.expectedDate))}</li>`).join('')}</ul>` : ''}
+    <div class="btn-row"><a class="btn small" href="#/finance/${pid}/queue">Open review queue</a> ${btn('Add change order', 'fin-add', { type: 'changeOrders' }, 'btn small ghost')}</div>`;
+  if (step === 4) {
+    const fc = st().forecasts.filter((r) => r.programId === pid && !r.archived);
+    const later = months.filter((x) => x >= month);
+    const noFc = later.filter((x) => !fc.some((r) => r.month === x));
+    content = `<p>Forecast-to-complete: ${mny(t.ftc, cur)} across ${plural(fc.length, 'forecast line')}. Only enter costs not already in actuals or open commitments.</p>
+      ${noFc.length ? `<p class="small muted">Months from ${esc(F.monthLabel(month))} with no forecast lines: ${noFc.map(F.monthLabel).map(esc).join(', ')}. That may be correct; check it.</p>` : ''}
+      <div class="btn-row">${btn('Add forecast line', 'fin-add', { type: 'forecasts' }, 'btn small primary')}</div>`;
+  }
+  if (step === 5) content = q.variances.length ? `<p>Variances at or above ${esc(b.varianceThreshold ?? 5)}%. Explain each one in your own words; leave it blank if the cause isn’t known yet.</p>
+    <div class="fin-explain">${q.variances.map((v) => { const key = `${v.dim}:${v.key}`; const id = `fx-${safeName(key)}`; return `<div class="field"><label for="${id}">${esc(v.dim)} ${esc(v.key)}: ${m(v.variance)} (${esc(pctTxt(v.variancePct))}) ${varBadge(v.variance)}</label><textarea id="${id}" rows="2" data-finexplain="${esc(key)}">${esc((rv.explanations || {})[key] || '')}</textarea></div>`; }).join('')}</div>
+    ${btn('Save explanations', 'fin-save-explain', {}, 'btn small primary')}` : `<p>No variance at or above ${esc(b.varianceThreshold ?? 5)}% in recorded data.</p>`;
+  if (step === 6) {
+    const pend = st().reallocations.filter((r) => r.programId === pid && !r.archived && ['Proposed', 'Pending approval'].includes(r.status));
+    content = `<p>${plural(pend.length, 'request')} awaiting a decision.</p>${pend.length ? `<ul class="plain">${pend.map((r) => `<li>${esc(r.type)} ${m(r.amount)}: ${esc(r.reason)} ${btn('Decide', 'fin-ra-decide', { id: r.id, decision: 'Approved' }, 'link-btn')}</li>`).join('')}</ul>` : ''}
+      <div class="btn-row">${btn('New request', 'fin-ra-new', {}, 'btn small primary')} <a class="btn small ghost" href="#/finance/${pid}/changes">All requests</a></div>`;
+  }
+  if (step === 7) {
+    const built = F.buildFinanceSummary(st(), pid, month, { today: today() });
+    const key = `${pid}:${month}`;
+    const text = ui.finance.summaryDraft[key] ?? (rv.summary || built.text);
+    content = `${built.missing.length ? `<div class="callout"><strong>Missing information</strong><ul class="plain">${built.missing.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '<p>No missing information identified.</p>'}
+      <label for="fin-summary" class="sr-only">Finance status summary draft</label>
+      <textarea id="fin-summary" class="draft-text" rows="22" data-finsummary="${esc(key)}">${esc(text)}</textarea>
+      <p class="small muted">${rv.summary ? 'Showing your saved draft.' : 'Built from recorded data. Not saved yet.'} “Rebuild” replaces the text with a fresh draft.</p>
+      <div class="btn-row">${btn('Save draft', 'fin-sum-save', {}, 'btn primary')} ${btn('Export Markdown', 'fin-sum-md', {}, 'btn')} ${btn('Copy', 'fin-sum-copy', {}, 'btn ghost')} ${btn('Rebuild from current data', 'fin-sum-rebuild', {}, 'btn ghost')}</div>`;
+  }
+  const st0 = rv.steps?.[step] || {};
+  return `<div class="toolbar"><div class="filter"><label for="fin-review-month">Review month</label><select id="fin-review-month" data-finreviewmonth>${months.map((x) => `<option value="${x}"${x === month ? ' selected' : ''}>${esc(F.monthLabel(x))}</option>`).join('')}</select></div></div>
+    <nav aria-label="Monthly review steps" class="phase-nav">${stepper}</nav>
+    <section class="card"><p class="eyebrow">Step ${step} of 7 · ${esc(F.monthLabel(month))}</p><h2>${esc(S2.title)}</h2><p class="phase-purpose">${esc(S2.help)}</p>${content}
+      <div class="field fin-step-notes"><label for="fin-step-note">Notes for this step (optional)</label><textarea id="fin-step-note" rows="2">${esc(st0.notes || '')}</textarea></div>
+      <div class="btn-row">
+        <label class="check"><input type="checkbox" id="fin-step-done"${st0.done ? ' checked' : ''}> <span>I’ve completed this step</span></label>
+        ${btn('Save step', 'fin-step-save', {}, 'btn small')}
+        ${step > 1 ? btn('← Previous', 'fin-step', { n: step - 1 }, 'btn small ghost') : ''}${step < 7 ? btn('Next →', 'fin-step', { n: step + 1 }, 'btn small ghost') : ''}
+      </div></section>`;
+}
+
+// ----- import / export & help
+function finData(pid, b) {
+  return `<section class="card"><h2>Import from CSV</h2>
+      <p>Choose the record type, then pick a file. Every row is checked first. If any row has a problem, nothing is imported and you’ll see which rows to fix.</p>
+      <div class="toolbar"><div class="filter"><label for="fin-imp-type">Record type</label><select id="fin-imp-type">${Object.entries(F.CSV_SPECS).map(([k, sp]) => `<option value="${k}">${esc(sp.label)}</option>`).join('')}</select></div>
+        <div class="filter filter-btns">${btn('Choose CSV file…', 'fin-import', {}, 'btn primary small')} ${btn('Download template', 'fin-template', {}, 'btn ghost small')}</div></div>
+      <p class="small muted">Workstream and project names must match this program exactly. Categories must be in the budget’s category list. Dates use YYYY-MM-DD; months use YYYY-MM.</p></section>
+    <section class="card"><h2>Export to CSV</h2><div class="btn-row">${Object.entries(F.CSV_SPECS).map(([k, sp]) => btn(`Export ${sp.label.toLowerCase()}`, 'fin-export-recs', { type: k }, 'btn small')).join(' ')} ${btn('Export change orders', 'fin-export-recs', { type: 'changeOrders' }, 'btn small')} ${btn('Export reallocations', 'fin-export-recs', { type: 'reallocations' }, 'btn small')}</div>
+      <p class="small muted">Exports include active records for this program. For a full backup of everything, use Data &amp; Privacy → Export backup.</p></section>`;
+}
+function finHelp() {
+  const d = [
+    ['Actuals', 'Expenses already recorded.'],
+    ['Open commitment', 'For a PR/PO with status Approved or Open: original amount + approved change orders − amount spent or invoiced, never below zero. The spent part is already in actuals, so it is not counted again. Draft, Requested, Closed and Cancelled PR/POs are not commitments. Pending or rejected change orders are not counted.'],
+    ['Forecast-to-complete', 'Expected future costs that are not already actuals or open commitments. You enter these as forecast lines.'],
+    ['Estimate at completion (EAC)', 'Actuals + open commitments + forecast-to-complete.'],
+    ['Forecast variance', 'EAC − current approved budget, shown in money and as a percentage of the budget. Positive means over budget; negative means under budget.'],
+    ['Uncommitted budget remaining', 'Current approved budget − actuals − open commitments.'],
+    ['Projected budget remaining', 'Current approved budget − EAC.'],
+    ['Current approved budget', 'Original approved baseline + approved budget increases − approved budget decreases. Reallocations move budget between categories or workstreams without changing the total. Proposed and pending requests change nothing.'],
+    ['Budget by category or workstream', 'Monthly phasing lines for that category or workstream, plus approved reallocations into it, minus approved reallocations out of it.'],
+    ['Period views', 'When you filter by months, the budget is the monthly phasing for those months. Approved changes are not phased by month, so they appear only in the full-period view.'],
+    ['Not entered', 'Shown whenever a value a calculation needs is missing, instead of a guessed number.'],
+    ['Archive and history', 'Archiving keeps a record for history but removes it from calculations. Every edit is logged with the date and the fields that changed.'],
+  ];
+  return `<section class="card"><h2>Definitions and formulas</h2><dl class="def-list">${d.map(([a, b2]) => `<div><dt>${a}</dt><dd>${b2}</dd></div>`).join('')}</dl></section>`;
+}
+
+// ----- forms
+function finFields(type, pid, v) {
+  const cats = catOptsFor(pid);
+  const ws = { name: 'workstreamId', label: 'Workstream', type: 'select', options: wsOptsFor(pid), empty: 'None' };
+  const pr = { name: 'projectId', label: 'Project', type: 'select', options: prOptsFor(pid), empty: 'None' };
+  const cat = { name: 'category', label: 'Cost category', type: 'select', options: cats, empty: 'Choose a category', required: true };
+  const month = { name: 'month', label: 'Month', type: 'select', options: finMonths(pid).map((m) => ({ value: m, label: F.monthLabel(m) })), empty: 'Choose a month', required: true };
+  const pos = st().commitments.filter((p) => p.programId === pid && !p.archived).map((p) => ({ value: p.id, label: `${p.ref} · ${p.vendor || p.description || ''}` }));
+  if (type === 'expenses') return [
+    { name: 'date', label: 'Date', type: 'date', required: true }, { name: 'amount', label: 'Amount', type: 'number', required: true, help: 'Use a negative amount for a credit or refund.' }, cat, ws, pr,
+    { name: 'description', label: 'Description', required: true, full: true }, { name: 'source', label: 'Source', placeholder: 'e.g. invoice number, expense report' },
+    { name: 'commitmentId', label: 'Paid against PR/PO (optional)', type: 'select', options: pos, empty: 'None', help: 'For reference only. Keep the PR/PO’s spent amount up to date so its open commitment is right.' },
+  ];
+  if (type === 'commitments') return [
+    { name: 'ref', label: 'Reference number', required: true }, { name: 'type', label: 'Type', type: 'select', options: F.PO_TYPES },
+    { name: 'vendor', label: 'Vendor' }, { name: 'owner', label: 'Owner' }, cat, ws, pr,
+    { name: 'originalAmount', label: 'Original amount', type: 'number', required: true }, { name: 'spentAmount', label: 'Amount spent or invoiced', type: 'number', help: 'Record the matching spend as actual expenses too; it is only subtracted here, never added twice.' },
+    { name: 'status', label: 'Status', type: 'select', options: F.PO_STATUSES, help: 'Only Approved and Open count as commitments.' }, { name: 'expectedDate', label: 'Expected date', type: 'date' },
+    { name: 'description', label: 'Description', full: true },
+  ];
+  if (type === 'changeOrders') return [
+    { name: 'commitmentId', label: 'PR/PO', type: 'select', options: pos, empty: 'Choose a PR/PO', required: true }, { name: 'amount', label: 'Amount', type: 'number', required: true, help: 'Negative to reduce the PR/PO.' },
+    { name: 'reason', label: 'Reason', type: 'textarea', full: true, required: true }, { name: 'status', label: 'Approval status', type: 'select', options: F.CO_STATUSES }, { name: 'approvalDate', label: 'Approval date', type: 'date' },
+  ];
+  if (type === 'forecasts') return [month, { name: 'amount', label: 'Amount', type: 'number', required: true }, cat, ws, pr, { name: 'basis', label: 'Basis for the estimate', full: true, help: 'Only costs not already in actuals or open commitments.' }];
+  if (type === 'phasing') return [month, { name: 'amount', label: 'Budget amount', type: 'number', required: true }, { ...cat, required: false, empty: 'None', help: 'Phase by category, workstream, or both.' }, ws];
+  if (type === 'reallocations') {
+    const dim = v.dimension || 'category';
+    const opts = dim === 'workstream' ? wsOptsFor(pid) : cats.map((c) => ({ value: c, label: c }));
+    return [
+      { name: 'type', label: 'Change type', type: 'select', options: F.RA_TYPES, refresh: true },
+      { name: 'dimension', label: 'Budget by', type: 'select', options: F.RA_DIMENSIONS, refresh: true, resets: ['from', 'to'] },
+      ...(v.type !== 'Budget increase' ? [{ name: 'from', label: 'Source', type: 'select', options: opts, empty: 'Choose', required: true }] : []),
+      ...(v.type !== 'Budget decrease' ? [{ name: 'to', label: 'Destination', type: 'select', options: opts, empty: 'Choose', required: true }] : []),
+      { name: 'amount', label: 'Amount', type: 'number', required: true }, { name: 'requester', label: 'Requester', required: true },
+      { name: 'reason', label: 'Reason', type: 'textarea', full: true, required: true },
+      { name: 'status', label: 'Status', type: 'select', options: F.RA_STATUSES, help: 'Only Approved changes the budget.' }, { name: 'approver', label: 'Approver' }, { name: 'decisionDate', label: 'Decision date', type: 'date' },
+    ];
+  }
+  return [];
+}
+const AMOUNT_KEYS = ['amount', 'originalAmount', 'spentAmount', 'baseline', 'varianceThreshold'];
+function finForm(type, pid, rec = null, preset = {}) {
+  const b = F.budgetFor(st(), pid);
+  const kind = { expenses: 'expense', commitments: 'commitment', changeOrders: 'changeOrder', forecasts: 'forecast', phasing: 'phasing', reallocations: 'reallocation' }[type];
+  const defaults = { commitments: { type: 'PO', status: 'Open', spentAmount: 0 }, changeOrders: { status: 'Pending' }, reallocations: { type: 'Reallocation', dimension: 'category', status: 'Pending approval' }, expenses: { date: today() } }[type] || {};
+  const label = REC_TYPES.find(([k]) => k === type)?.[1] || 'Reallocation request';
+  openForm({
+    title: `${rec ? 'Edit' : 'New'} ${type === 'reallocations' ? 'budget change request' : label.toLowerCase().replace(/s$/, '')}`,
+    intro: rec ? 'Edits are saved to the record’s change history.' : '',
+    values: rec ? { ...rec } : { programId: pid, ...defaults, ...preset },
+    fields: (v) => finFields(type, pid, v),
+    validate: (v) => {
+      const r = { ...v }; AMOUNT_KEYS.forEach((k) => { if (k in r) r[k] = F.toAmount(r[k]); });
+      if (type === 'commitments' && r.spentAmount === null) r.spentAmount = 0;
+      const errs = F.validateRecord(kind, r, { categories: F.categoriesFor(b), months: finMonths(pid) });
+      return errs.length ? { message: errs.join(' ') } : null;
+    },
+    onSave: (v) => {
+      const r = { ...v, programId: pid }; AMOUNT_KEYS.forEach((k) => { if (k in r) r[k] = F.toAmount(r[k]); });
+      if (type === 'commitments' && r.spentAmount === null) r.spentAmount = 0;
+      if (type === 'reallocations') { if (r.type === 'Budget increase') r.from = ''; if (r.type === 'Budget decrease') r.to = ''; }
+      if (type === 'changeOrders') { const po = st().commitments.find((p) => p.id === r.commitmentId); if (po) { r.category = po.category; r.workstreamId = po.workstreamId; r.projectId = po.projectId; } }
+      S.upsert(type, r);
+      toast(rec ? 'Saved. The change is in the record’s history.' : 'Record added.');
+    },
+  });
+}
+
+function budgetForm(pid) {
+  const b = F.budgetFor(st(), pid);
+  const y = today().slice(0, 4);
+  openForm({
+    title: b ? 'Edit budget' : 'Set up budget',
+    intro: b ? 'Use this to correct the budget record. Approved changes to the budget should go through Reallocations & baseline so they are dated and approved.' : 'You can change any of this later.',
+    values: b ? { ...b, categories: F.categoriesFor(b).join('\n') } : { currency: 'USD', periodStart: `${y}-01`, periodEnd: `${y}-12`, categories: F.DEFAULT_CATEGORIES.join('\n'), varianceThreshold: 5 },
+    fields: [
+      { name: 'currency', label: 'Currency (3-letter code)', required: true, placeholder: 'USD' },
+      { name: 'owner', label: 'Budget owner' },
+      { name: 'periodStart', label: 'Budget period start', type: 'month', required: true, placeholder: 'YYYY-MM' },
+      { name: 'periodEnd', label: 'Budget period end', type: 'month', required: true, placeholder: 'YYYY-MM' },
+      { name: 'baseline', label: 'Original approved baseline', type: 'number', help: 'Leave blank if not approved yet; totals will show “Not entered”.' },
+      { name: 'varianceThreshold', label: 'Material variance threshold (%)', type: 'number', help: 'Variances at or above this are flagged for explanation.' },
+      { name: 'categories', label: 'Cost categories (one per line)', type: 'textarea', rows: 7, full: true, help: 'Rename or add categories. Records using a removed category keep it, but it will be flagged until you fix them.' },
+      { name: 'notes', label: 'Notes', type: 'textarea', full: true },
+    ],
+    validate: (v) => {
+      const r = { ...v, currency: String(v.currency || '').toUpperCase(), baseline: F.toAmount(v.baseline), categories: String(v.categories || '').split('\n').map((x) => x.trim()).filter(Boolean) };
+      const errs = F.validateRecord('budget', r);
+      if (v.baseline !== '' && r.baseline === null) errs.push('Baseline must be a number.');
+      if (new Set(r.categories).size !== r.categories.length) errs.push('Each category must be unique.');
+      return errs.length ? { message: errs.join(' ') } : null;
+    },
+    onSave: (v) => {
+      const cats = String(v.categories || '').split('\n').map((x) => x.trim()).filter(Boolean);
+      S.upsert('budgets', { ...(b || {}), ...v, programId: pid, currency: String(v.currency).toUpperCase(), baseline: F.toAmount(v.baseline), varianceThreshold: F.toAmount(v.varianceThreshold) ?? 5, categories: cats, archived: false });
+      toast(b ? 'Budget updated.' : 'Budget created. Next, add monthly phasing.');
+      if (!b) location.hash = `#/finance/${pid}/records`;
+    },
+  });
+}
+
+function finExportRows(pid, type) {
+  const recs = st()[type].filter((r) => r.programId === pid && !r.archived);
+  const W = (r) => wsName(r.workstreamId); const Pj = (r) => projName(r.projectId);
+  const map = {
+    expenses: (r) => ({ Date: r.date, Amount: r.amount, Category: r.category, Workstream: W(r), Project: Pj(r), Description: r.description, Source: r.source, 'Linked PR/PO': poRef(r.commitmentId) }),
+    commitments: (r) => { const d = F.commitmentDetail(r, st().changeOrders.filter((c) => c.programId === pid)); return { Reference: r.ref, Type: r.type, Vendor: r.vendor, Owner: r.owner, Category: r.category, Workstream: W(r), Project: Pj(r), 'Original amount': r.originalAmount, 'Spent amount': r.spentAmount, 'Approved change orders': d.approvedChangeOrders, 'Open commitment': d.open ?? NE, Status: r.status, 'Expected date': r.expectedDate, Description: r.description }; },
+    changeOrders: (r) => ({ 'PR/PO': poRef(r.commitmentId), Amount: r.amount, Reason: r.reason, Status: r.status, 'Approval date': r.approvalDate }),
+    forecasts: (r) => ({ Month: r.month, Category: r.category, Workstream: W(r), Project: Pj(r), Amount: r.amount, Basis: r.basis }),
+    phasing: (r) => ({ Month: r.month, Category: r.category, Workstream: W(r), Amount: r.amount }),
+    reallocations: (r) => ({ Type: r.type, 'Budget by': r.dimension, Source: dimLabel(pid, r.dimension, r.from), Destination: dimLabel(pid, r.dimension, r.to), Amount: r.amount, Reason: r.reason, Requester: r.requester, Approver: r.approver, Status: r.status, 'Decision date': r.decisionDate }),
+  };
+  return recs.map(map[type]);
 }
 
 // ---------------------------------------------------------------- view: roadmap
@@ -1625,7 +2099,7 @@ function viewHelp() {
 
 // ---------------------------------------------------------------- router & chrome
 const VIEWS = {
-  overview: viewOverview, guided: viewGuided, programs: viewPrograms, projects: viewProjects, roadmap: viewRoadmap, raid: viewRaid, decisions: viewDecisions,
+  overview: viewOverview, guided: viewGuided, programs: viewPrograms, finance: viewFinance, projects: viewProjects, roadmap: viewRoadmap, raid: viewRaid, decisions: viewDecisions,
   stakeholders: viewStakeholders, reports: viewReports, templates: viewTemplates, data: viewData, help: viewHelp,
 };
 function parseRoute() {
@@ -2036,6 +2510,150 @@ const ACTIONS = {
     const inUse = st().lifecycles.filter((l) => l.playbookId === d.id).length;
     askConfirm(`Delete this playbook?${inUse ? ` ${plural(inUse, 'program')} using it will switch to the General playbook view; answers for matching items are kept.` : ''}`, 'Delete playbook', () => { S.remove('customPlaybooks', d.id); toast('Playbook deleted.'); });
   },
+  // ----- budget & finance
+  'fin-budget': (d) => budgetForm(d.program || ui.finance.pid),
+  'fin-clear': () => { Object.assign(ui.finance, { from: '', to: '', ws: '', cat: '', project: '' }); render(); },
+  'fin-rectype': (d) => { ui.finance.recType = d.type; const r = parseRoute(); if (r.sub !== 'records') location.hash = `#/finance/${ui.finance.pid}/records`; else render(); },
+  'fin-add': (d) => finForm(d.type, ui.finance.pid),
+  'fin-edit': (d) => finForm(d.type, ui.finance.pid, find(d.type, d.id)),
+  'fin-archive': (d) => {
+    const r = find(d.type, d.id);
+    if (r.archived) { S.upsert(d.type, { id: r.id, archived: false }); toast('Record restored and included in calculations again.'); return; }
+    askConfirm('Archive this record? It stays in history but is left out of every calculation. You can restore it later.', 'Archive', () => { S.upsert(d.type, { id: r.id, archived: true }); toast('Record archived.'); });
+  },
+  'fin-history': (d) => {
+    const r = find(d.type, d.id);
+    const h = (r.history || []).slice().reverse();
+    openForm({ title: 'Change history', fields: [{ name: 'h', type: 'info', html: h.length ? `<ol class="fin-history">${h.map((x) => `<li><time datetime="${esc(x.at)}">${esc(new Date(x.at).toLocaleString())}</time> ${esc(x.changes)}</li>`).join('')}</ol>` : '<p>No history recorded.</p>' }], submitLabel: 'Close', onSave: () => {} });
+  },
+  'fin-spread': () => {
+    const pid = ui.finance.pid; const months = finMonths(pid);
+    openForm({
+      title: 'Spread an amount evenly across months',
+      intro: 'Creates one phasing line per month. Amounts are rounded to whole units; any remainder goes to the last month.',
+      values: { from: months[0], to: months[months.length - 1] },
+      fields: [
+        { name: 'total', label: 'Total amount to spread', type: 'number', required: true },
+        { name: 'category', label: 'Cost category', type: 'select', options: catOptsFor(pid), empty: 'None' },
+        { name: 'workstreamId', label: 'Workstream', type: 'select', options: wsOptsFor(pid), empty: 'None' },
+        { name: 'from', label: 'From month', type: 'select', options: months.map((m) => ({ value: m, label: F.monthLabel(m) })) },
+        { name: 'to', label: 'To month', type: 'select', options: months.map((m) => ({ value: m, label: F.monthLabel(m) })) },
+      ],
+      validate: (v) => {
+        if (!(F.toAmount(v.total) > 0)) return { message: 'Enter a total greater than zero.', field: 'total' };
+        if (blank(v.category) && blank(v.workstreamId)) return { message: 'Choose a category, a workstream, or both.' };
+        if (v.to < v.from) return { message: 'The end month must be on or after the start month.', field: 'to' };
+        return null;
+      },
+      onSave: (v) => {
+        const ms = F.monthsBetween(v.from, v.to); const total = F.toAmount(v.total);
+        const each = Math.floor(total / ms.length);
+        const recs = ms.map((m, i) => ({ programId: pid, month: m, category: v.category, workstreamId: v.workstreamId, amount: i === ms.length - 1 ? total - each * (ms.length - 1) : each }));
+        S.insertMany('phasing', recs); toast(`Added ${plural(recs.length, 'phasing line')}.`);
+      },
+    });
+  },
+  'fin-ra-new': () => finForm('reallocations', ui.finance.pid),
+  'fin-ra-decide': (d) => {
+    const r = find('reallocations', d.id);
+    openForm({
+      title: 'Record decision',
+      intro: `${esc(r.type)} of ${esc(money(r.amount, finCur(r.programId)))}. Approving applies it to the budget; rejecting changes nothing.`,
+      values: { status: d.decision, approver: r.approver || '', decisionDate: today() },
+      fields: [
+        { name: 'status', label: 'Decision', type: 'select', options: ['Approved', 'Rejected'] },
+        { name: 'approver', label: 'Approver', required: true },
+        { name: 'decisionDate', label: 'Decision date', type: 'date', required: true },
+      ],
+      onSave: (v) => { S.upsert('reallocations', { id: r.id, ...v }); toast(v.status === 'Approved' ? 'Approved and applied to the budget. Added to the baseline history.' : 'Recorded as rejected.'); },
+    });
+  },
+  'fin-queue': (d) => { ui.finance.queue = d.q; render(); },
+  'fin-drill': (d) => {
+    const pid = ui.finance.pid; const cur = finCur(pid);
+    const comp = F.computeProgram(st(), pid, finFilters(), today());
+    const rows = (heads, list) => (list.length ? `<div class="fin-mini-wrap"><table class="fin-mini"><thead><tr>${heads.map((h) => `<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${list.join('')}</tbody></table></div>` : `<p>No records.</p>`);
+    const m = (v) => mny(v, cur);
+    const R = comp.records;
+    let html = '';
+    if (d.kind === 'actuals') html = rows(['Date', 'Amount', 'Category', 'Workstream', 'Description', 'Source'], R.expenses.map((e) => `<tr><td>${esc(e.date)}</td><td class="num">${m(e.amount)}</td><td>${esc(e.category)}</td><td>${esc(wsName(e.workstreamId))}</td><td>${esc(e.description)}</td><td>${esc(e.source || '')}</td></tr>`));
+    if (d.kind === 'open') html = rows(['PR/PO', 'Status', 'Original', '+ Approved COs', '− Spent', '= Open commitment'], R.commitments.map((c) => `<tr class="${c.counted ? '' : 'closed'}"><td>${esc(c.po.ref)}</td><td>${esc(c.po.status)}${c.counted ? '' : ' <small>(not a commitment)</small>'}</td><td class="num">${m(c.original)}</td><td class="num">${m(c.approvedChangeOrders)}</td><td class="num">${m(c.spent)}</td><td class="num"><strong>${m(c.open)}</strong></td></tr>`));
+    if (d.kind === 'ftc') html = rows(['Month', 'Amount', 'Category', 'Workstream', 'Basis'], R.forecasts.map((f) => `<tr><td>${esc(F.monthLabel(f.month))}</td><td class="num">${m(f.amount)}</td><td>${esc(f.category)}</td><td>${esc(wsName(f.workstreamId))}</td><td>${esc(f.basis || '')}</td></tr>`));
+    if (d.kind === 'budget') {
+      const t = comp.totals;
+      html = `<p>Original baseline: ${m(t.baseline)} · Current approved budget: ${m(t.currentTotal)} · This view: ${m(t.budget)}</p>
+        <h3 class="h-sm">Approved changes</h3>${rows(['Decision date', 'Type', 'Amount', 'From', 'To', 'Approver'], R.changes.map((c) => `<tr><td>${esc(c.decisionDate)}</td><td>${esc(c.type)}</td><td class="num">${m(c.amount)}</td><td>${esc(dimLabel(pid, c.dimension, c.from || ''))}</td><td>${esc(dimLabel(pid, c.dimension, c.to || ''))}</td><td>${esc(c.approver || '')}</td></tr>`))}
+        <h3 class="h-sm">Phasing lines in this view (${R.phasing.length})</h3>${rows(['Month', 'Amount', 'Category', 'Workstream'], R.phasing.slice(0, 200).map((p) => `<tr><td>${esc(F.monthLabel(p.month))}</td><td class="num">${m(p.amount)}</td><td>${esc(p.category || '')}</td><td>${esc(wsName(p.workstreamId))}</td></tr>`))}`;
+    }
+    openForm({ title: { actuals: 'Records behind actuals', open: 'Records behind open commitments', ftc: 'Records behind forecast-to-complete', budget: 'Records behind the budget' }[d.kind], fields: [{ name: 'x', type: 'info', html }], submitLabel: 'Close', onSave: () => {} });
+  },
+  'fin-step': (d) => { ui.finance.reviewStep = Number(d.n); render(); },
+  'fin-step-save': () => {
+    const pid = ui.finance.pid; const month = ui.finance.reviewMonth; const n = ui.finance.reviewStep;
+    const cur = F.reviewFor(st(), pid, month) || { id: `fr-${pid}-${month}`, programId: pid, month, steps: {}, explanations: {}, notes: '', summary: '' };
+    const steps = { ...(cur.steps || {}), [n]: { done: $('#fin-step-done').checked, notes: $('#fin-step-note').value.trim() } };
+    S.upsert('finReviews', { ...cur, steps }); toast($('#fin-step-done').checked ? `Step ${n} marked complete.` : `Step ${n} saved.`);
+  },
+  'fin-save-explain': () => {
+    const pid = ui.finance.pid; const month = ui.finance.reviewMonth;
+    const cur = F.reviewFor(st(), pid, month) || { id: `fr-${pid}-${month}`, programId: pid, month, steps: {}, explanations: {}, notes: '', summary: '' };
+    const ex = { ...(cur.explanations || {}) };
+    document.querySelectorAll('[data-finexplain]').forEach((t) => { ex[t.dataset.finexplain] = t.value.trim(); });
+    S.upsert('finReviews', { ...cur, explanations: ex }); toast('Explanations saved. They are used in the summary draft.');
+  },
+  'fin-sum-save': () => {
+    const pid = ui.finance.pid; const month = ui.finance.reviewMonth;
+    const cur = F.reviewFor(st(), pid, month) || { id: `fr-${pid}-${month}`, programId: pid, month, steps: {}, explanations: {}, notes: '', summary: '' };
+    S.upsert('finReviews', { ...cur, summary: $('#fin-summary').value });
+    delete ui.finance.summaryDraft[`${pid}:${month}`]; toast('Summary draft saved.');
+  },
+  'fin-sum-rebuild': () => askConfirm('Replace the draft with a fresh one from current data? Your edits will be lost unless you export them first.', 'Rebuild', () => {
+    const pid = ui.finance.pid; const month = ui.finance.reviewMonth;
+    const cur = F.reviewFor(st(), pid, month);
+    delete ui.finance.summaryDraft[`${pid}:${month}`];
+    if (cur) S.upsert('finReviews', { ...cur, summary: '' }); else render();
+    toast('Draft rebuilt from current data.');
+  }),
+  'fin-sum-md': () => download(`finance-status-${safeName(programName(ui.finance.pid))}-${ui.finance.reviewMonth}.md`, $('#fin-summary').value, 'text/markdown;charset=utf-8', 'Markdown saved.'),
+  'fin-sum-copy': async () => { const ok = await copyText($('#fin-summary').value); toast(ok ? 'Summary copied.' : 'Copy failed. Use Export Markdown instead.', ok ? 'ok' : 'warn'); },
+  'fin-template': () => {
+    const type = $('#fin-imp-type').value; const sp = F.CSV_SPECS[type];
+    download(`template-${type}.csv`, L.toCSV([], sp.columns), 'text/csv;charset=utf-8', 'Template saved.');
+  },
+  'fin-import': () => {
+    const type = $('#fin-imp-type').value; const pid = ui.finance.pid;
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.csv,text/csv';
+    inp.addEventListener('change', async () => {
+      const file = inp.files[0]; if (!file) return;
+      const res = F.importCSV(type, await file.text(), { categories: catOptsFor(pid), workstreams: st().workstreams.filter((w) => w.programId === pid), projects: st().projects.filter((x) => x.programId === pid), months: finMonths(pid) });
+      if (res.errors.length) {
+        openForm({ title: 'Import stopped: please fix these rows', fields: [{ name: 'x', type: 'info', html: `<p>Nothing was imported from <strong>${esc(file.name)}</strong>.</p><ul class="plain fin-errors">${res.errors.slice(0, 50).map((e) => `<li>${esc(e)}</li>`).join('')}</ul>${res.errors.length > 50 ? `<p>${res.errors.length - 50} more not shown.</p>` : ''}` }], submitLabel: 'Close', onSave: () => {} });
+        return;
+      }
+      S.insertMany(type, res.records.map((r) => ({ ...r, programId: pid, source: r.source ?? `CSV import: ${file.name}` })));
+      toast(`Imported ${plural(res.records.length, 'record')} from ${file.name}.`);
+    });
+    inp.click();
+  },
+  'fin-export-recs': (d) => {
+    const rows = finExportRows(ui.finance.pid, d.type);
+    if (!rows.length) { toast('No records to export.', 'warn'); return; }
+    download(`${safeName(programName(ui.finance.pid))}-${d.type}-${today()}.csv`, L.toCSV(rows), 'text/csv;charset=utf-8', `Exported ${plural(rows.length, 'row')}.`);
+  },
+  'fin-export-view': () => {
+    const pid = ui.finance.pid; const comp = F.computeProgram(st(), pid, finFilters(), today());
+    const keysC = catOptsFor(pid).map((c) => ({ dim: 'cat', key: c, label: `Category: ${c}` }));
+    const keysW = wsOptsFor(pid).map((w) => ({ dim: 'ws', key: w.value, label: `Workstream: ${w.label}` }));
+    const rowsFor = (list) => list.map((k) => ({ label: k.label, ...F.computeProgram(st(), pid, { ...finFilters(), [k.dim]: k.key }, today()).totals }));
+    const all = [{ label: 'Total (this view)', ...comp.totals }, ...rowsFor(keysC), ...rowsFor(keysW)];
+    const n = (v) => (typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : NE);
+    download(`${safeName(programName(pid))}-budget-view-${today()}.csv`, L.toCSV(all.map((r) => ({ Area: r.label, Budget: n(r.budget), Actuals: n(r.actuals), 'Open commitments': n(r.open), 'Forecast-to-complete': n(r.ftc), EAC: n(r.eac), 'Forecast variance': n(r.variance), 'Forecast variance %': typeof r.variancePct === 'number' ? `${(r.variancePct * 100).toFixed(1)}%` : NE, 'Uncommitted remaining': n(r.uncommitted), 'Projected remaining': n(r.projected) }))), 'text/csv;charset=utf-8', 'View exported.');
+  },
+  'fin-export-monthly': () => {
+    const pid = ui.finance.pid; const comp = F.computeProgram(st(), pid, finFilters(), today());
+    const n = (v) => (typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : NE);
+    download(`${safeName(programName(pid))}-monthly-${today()}.csv`, L.toCSV(comp.monthly.map((r) => ({ Month: r.month, Budget: n(r.budget), Actuals: n(r.actuals), 'Open commitments': n(r.open), 'Forecast-to-complete': n(r.ftc), EAC: n(r.eac), Variance: n(r.variance) }))), 'text/csv;charset=utf-8', 'Monthly view exported.');
+  },
   'new-program': () => programForm(),
   'new-project': (d) => projectForm(null, d.program || ''),
   'edit-project': (d) => projectForm(find('projects', d.id)),
@@ -2164,11 +2782,16 @@ document.addEventListener('click', (e) => {
 document.addEventListener('input', (e) => {
   const t = e.target;
   if (t.dataset.gdraft) { ui.guided.unsaved[t.dataset.gdraft] = t.value; return; }
+  if (t.dataset.finsummary) { ui.finance.summaryDraft[t.dataset.finsummary] = t.value; return; }
   if (t.dataset.draft) { setDraftValue(t.dataset.draft, t.value); return; }
   if (t.dataset.bind && t.type === 'search') { const [v, k] = t.dataset.bind.split('.'); ui[v][k] = t.value; render(); }
 });
 document.addEventListener('change', (e) => {
   const t = e.target;
+  if (t.dataset.finprog !== undefined) { ui.finance.pid = t.value; Object.assign(ui.finance, { from: '', to: '', ws: '', cat: '', project: '' }); location.hash = `#/finance/${t.value}/${parseRoute().sub || 'overview'}`; return; }
+  if (t.dataset.finfilter) { ui.finance[t.dataset.finfilter] = t.value; render(); return; }
+  if (t.dataset.finarchived !== undefined) { ui.finance.showArchived = t.checked; render(); return; }
+  if (t.dataset.finreviewmonth !== undefined) { ui.finance.reviewMonth = t.value; render(); return; }
   if (t.dataset.gstatus) { ACTIONS['guided-status']({ program: t.dataset.program, key: t.dataset.gstatus, value: t.value }); return; }
   if (t.id === 'focus-select') {
     if (t.value && ui.reports.draft && ui.reports.draft.programId !== t.value) ui.reports.draft = null;

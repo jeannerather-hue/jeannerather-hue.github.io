@@ -1,6 +1,7 @@
 // Local-only data store. Everything lives in this browser's localStorage
 // under STORAGE_KEY. Nothing is sent over the network.
-import { COLLECTIONS, emptyState, normalizeState, todayISO, isBlank } from './logic.js?v=1791999075';
+import { COLLECTIONS, emptyState, normalizeState, todayISO, isBlank } from './logic.js?v=1792079564';
+import { FIN_COLLECTIONS, diffFields } from './finance.js?v=1792079564';
 
 export const STORAGE_KEY = 'tpm-delivery-hub:v1';
 
@@ -97,6 +98,18 @@ export function insertMany(collection, records) {
 // Transparent data-keeping rules applied on save.
 function applyRules(collection, rec, prev) {
   const today = todayISO();
+  // Finance records keep a basic change history (who changed what is not tracked; there are no accounts).
+  if (FIN_COLLECTIONS.includes(collection) && collection !== 'finReviews') {
+    const at = new Date().toISOString();
+    if (!prev) {
+      if (!(rec.history || []).length) rec.history = [{ at, changes: 'Created' }];
+    } else {
+      const ch = diffFields(prev, rec);
+      const fmt = (v) => (v === '' || v === undefined ? '(blank)' : typeof v === 'object' ? JSON.stringify(v) : String(v));
+      if (ch.length) rec.history = [...(prev.history || []), { at, changes: ch.map((c) => `${c.field}: ${fmt(c.from)} → ${fmt(c.to)}`).join('; ') }].slice(-50);
+      else rec.history = prev.history || [];
+    }
+  }
   if (collection === 'items') {
     if (rec.status === 'Done' && isBlank(rec.completedDate)) rec.completedDate = today;
     if (rec.status !== 'Done') rec.completedDate = '';

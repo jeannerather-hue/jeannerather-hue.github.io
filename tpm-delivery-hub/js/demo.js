@@ -1,7 +1,8 @@
 // FICTIONAL demo data. All people, teams, and programs are invented for
 // exploring the app. Every record carries isDemo: true so it can be removed.
 // Dates are relative to "today" so overdue and upcoming flags show up.
-import { addDays, todayISO } from './logic.js?v=1791999075';
+import { addDays, todayISO } from './logic.js?v=1792079564';
+import { buildFinanceDemo } from './finance.js?v=1792079564';
 
 export function buildDemoData(today = todayISO()) {
   const d = (n) => addDays(today, n);
@@ -234,5 +235,7 @@ export function buildDemoData(today = todayISO()) {
     },
   })];
 
-  return { programs, projects, lifecycles, workstreams, items, raid, decisions, stakeholders, raci, measures, reports, customTemplates: [] };
+  const fin = buildFinanceDemo(today);
+
+  return { ...fin, programs, projects, lifecycles, workstreams, items, raid, decisions, stakeholders, raci, measures, reports, customTemplates: [] };
 }

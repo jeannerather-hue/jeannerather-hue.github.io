@@ -3,7 +3,7 @@
 // - An item is Complete / Blocked / Not applicable ONLY when the user sets it.
 // - "Found in app" hints read existing records but never change an item's status.
 // - Drafts use "Not entered" for anything missing; nothing is invented.
-import * as L from './logic.js?v=1791999075';
+import * as L from './logic.js?v=1792079564';
 
 const NE = L.NOT_ENTERED;
 
