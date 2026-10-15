@@ -136,8 +136,10 @@
   }
 
   function renderProjects() {
+    const tierItem = (it) => (typeof it === "string" ? `<li>${esc(it)}</li>`
+      : `<li><span class="tier-text">${esc(it.text)}</span>${it.note ? `<span class="tier-note">${esc(it.note)}</span>` : ""}${it.link ? `<a class="tier-link" href="${esc(it.link)}">${esc(it.linkLabel || "More")} ${icon.arrow}</a>` : ""}</li>`);
     $("#tiers").innerHTML = P.aiData.map((g) =>
-      `<div class="tier"><h3>${esc(g.title)}</h3><ul>${g.items.map((it) => `<li>${esc(it)}</li>`).join("")}</ul></div>`).join("");
+      `<div class="tier"><h3>${esc(g.title)}</h3><ul>${g.items.map(tierItem).join("")}</ul></div>`).join("");
 
     const R = P.research;
     $("#research").innerHTML = `

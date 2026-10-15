@@ -203,18 +203,31 @@ window.PORTFOLIO = {
 
   tools: [
     { group: "Program delivery", use: "To organize plans, backlogs, schedules, and status.", items: ["Jira", "Confluence", "Rally", "Aha!", "Azure DevOps", "Smartsheet", "Microsoft Project", "Microsoft Planner", "Asana", "monday.com", "Wrike", "ClickUp", "Trello"], cases: ["payer-implementation"] },
-    { group: "Collaboration & workflow", use: "To communicate, document work, map processes, and track requests and approvals. I built the budget and PR/PO tracking system in Airtable.", items: ["SharePoint", "Microsoft Teams", "Google Workspace", "Slack", "Zoom", "Notion", "Airtable", "Miro", "Mural", "Visio / Lucidchart", "GitHub", "ServiceNow", "DocuSign", "Salesforce"], cases: ["budget-prpo-system", "payer-implementation"] },
+    { group: "Collaboration & workflow", use: "To communicate, document work, map processes, and track requests and approvals. I built the budget and PR/PO tracking system in Airtable.", items: ["SharePoint", "Microsoft Teams", "Google Workspace", "Slack", "Zoom", "Notion", "Airtable", "Miro", "Mural", "Visio / Lucidchart", "ServiceNow", "DocuSign", "Salesforce"], cases: ["budget-prpo-system", "payer-implementation"] },
     { group: "Enterprise systems", use: "ERP, HR, and workforce systems I've worked in and with across operations programs.", items: ["SAP", "Workday", "Oracle", "PeopleSoft", "Infor Lawson", "Kronos / UKG"], cases: [] },
     { group: "Healthcare systems", use: "Clinical, workforce, supply, quality, and planning systems from my healthcare operations work.", items: ["Epic", "Epic Clarity / Caboodle", "Cerner (Oracle Health)", "Meditech", "athenahealth", "eClinicalWorks", "Anaplan", "Press Ganey", "HealthStream", "Omnicell", "Pyxis", "Vizient", "Midas"], cases: ["emergency-supply", "compliance-patient-experience"] },
     { group: "Data & analytics", use: "Hands-on, for analysis, reporting, validation, and reconciliation.", items: ["Excel", "SQL", "Python", "R", "scikit-learn", "Tableau", "Power BI", "Snowflake", "dbt", "Databricks", "Looker", "Hex", "Tableau Prep", "Alteryx"], cases: [] },
     { group: "Data platforms & MDM", use: "Platforms in an enterprise data program I coordinated.", items: ["Microsoft Fabric", "Profisee MDM", "Coalesce"], cases: ["data-platform-mdm"] },
-    { group: "Cloud, AI & app delivery", use: "AI assistants for research, drafting, planning, and prototyping; AI meeting notes; and Apple's developer tools to build, test, and distribute my iPhone apps. At work, enterprise-approved AI tools only.", items: ["AWS", "Claude", "ChatGPT", "Microsoft Copilot", "Gemini", "Enterprise-approved AI tools", "Granola", "Otter.ai", "Apple Developer Program", "App Store Connect", "TestFlight", "GitHub Actions"], cases: [] },
+    { group: "Cloud & app delivery", use: "Cloud services, code hosting, and the tools I use to build, test, and distribute my iPhone apps.", items: ["AWS", "GitHub", "GitHub Actions", "Apple Developer Program", "App Store Connect", "TestFlight"], cases: [] },
+    { group: "AI assistants", use: "For research, drafting, planning, learning, and prototyping. At work, I use only enterprise-approved AI tools.", items: ["Google Gemini", "Microsoft Copilot"], cases: [] },
   ],
 
   aiData: [
-    { title: "Hands-on data science", items: ["MS in Data Science, completed August 2025", "Python, R, SQL, and scikit-learn for analysis and modeling", "EDMD research prototype (below)"] },
-    { title: "Data and technology programs I led", items: ["Enterprise data platform and MDM program execution and governance", "Workforce planning and forecasting workflow, dashboards, KPIs, and data checks", "Support for AI governance covering model and AI-system oversight and data used for AI"] },
-    { title: "AI tools I use", items: ["Claude and ChatGPT for research, drafting, planning, learning, and prototyping", "At work, enterprise-approved AI tools only"] },
+    // Items can be plain text, or { text, note, link, linkLabel } to add a short supporting note and a link to related content.
+    { title: "Hands-on data science", items: [
+      "MS in Data Science, completed August 2025",
+      "Python, R, SQL, and scikit-learn for analysis and modeling",
+      { text: "EDMD research prototype: stock-signal and next-day forecasting research", note: "Research work. No accuracy, profitability, or real-market results are claimed.", link: "#research", linkLabel: "Details below" },
+    ] },
+    { title: "Data and technology programs I led", items: [
+      { text: "Enterprise data platform and MDM program: execution and governance", note: "My assigned program deliverables completed.", link: "#case-data-platform-mdm", linkLabel: "Case study" },
+      { text: "Workforce planning and forecasting: workflow, dashboards, KPIs, and data checks", note: "Planning cycle approximately 40% shorter.", link: "#case-planning-forecasting", linkLabel: "Case study" },
+      "Support for AI governance, covering model and AI-system oversight and the data used for AI",
+    ] },
+    { title: "AI tools I use", items: [
+      "Google Gemini and Microsoft Copilot for research, drafting, planning, learning, and prototyping",
+      "At work, I use only enterprise-approved AI tools.",
+    ] },
   ],
 
   research: {
