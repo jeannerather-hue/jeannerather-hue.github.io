@@ -303,6 +303,45 @@ window.PORTFOLIO = {
     },
   ],
 
+  /* FP&A, Budget Planning & Financial Operations section.
+     Case study: only the facts Jeanne confirmed for this section. Result is qualitative; no amounts claimed.
+     The interactive demo below it uses fictional data only (see fpa-model.js) and is kept separate. */
+  fpa: {
+    eyebrow: "FP&A · Budget planning · Financial operations",
+    title: "FP&A, Budget Planning & Financial Operations",
+    intro: "How I run budget and financial operations for technology programs: one tracked record for budgets, reallocations, purchase requisitions and purchase orders, and change orders. Below the case study, an interactive model shows the planning concepts with fictional numbers.",
+    caseStudy: {
+      org: "Global technology company · Contract",
+      title: "Budget and financial operations",
+      summary: "I led the program and financial operations work for a portfolio of program budgets, and built the centralized system that tracked it.",
+      challenge: "Budget tracking, budget reallocations, purchase requisitions and purchase orders (PR/POs), and change orders all had to be tracked, approved and kept in step with one another. Each one changes what has been spent, what is committed, and what is still available.",
+      role: "I led the program and financial operations work. I managed budget tracking, reallocation approvals, PR/POs, and change orders, and I built the centralized tracking system in Airtable.",
+      roleNote: "This case covers the tracking system I built and the operations I managed. It does not cover configuring enterprise financial or procurement systems.",
+      system: [
+        { title: "Centralized budget tracking", text: "One Airtable system as the place to track budgets, instead of separate records for each request." },
+        { title: "Reallocation tracking and approvals", text: "Budget reallocation requests recorded in the same system and managed through approval." },
+        { title: "PR/PO tracking", text: "Purchase requisitions and purchase orders tracked alongside the budgets they draw on." },
+        { title: "Change order management", text: "Change orders managed against the purchase orders and budgets they affect." },
+      ],
+      process: [
+        { step: "Track", text: "Budgets tracked in the centralized system." },
+        { step: "Request", text: "Reallocation needs raised as requests." },
+        { step: "Approve", text: "Reallocation approvals managed and recorded." },
+        { step: "Commit", text: "PR/POs tracked against the budget." },
+        { step: "Adjust", text: "Change orders managed as scope changed." },
+      ],
+      processNote: "Simplified view of how the work fit together.",
+      methods: ["Airtable", "Budget tracking", "Reallocation approvals", "PR/PO tracking", "Change order management"],
+      outcome: "Budget tracking, reallocations and PR/PO tracking were brought together in one centralized system, giving one place to follow budgets, approvals, purchase orders and change orders.",
+      related: "budget-prpo-system",
+    },
+    demo: {
+      label: "Illustrative demo — fictional data, not actual client results.",
+      note: "This interactive model demonstrates financial-planning concepts using fictional data. It is separate from my actual work results above and is not based on any employer or client.",
+      program: "Fictional program: Atlas Platform Modernization (FY demo year)",
+    },
+  },
+
   experience: [
     { org: "Apple", title: "Program Manager – Enterprise Data & Technology Program Delivery (Contract)", dates: "Aug 2024 – Present" },
     { org: "TRAC Associates", title: "Senior Program Manager – Multi-Stakeholder Program Delivery & Governance (Contract)", dates: "Aug 2024 – Oct 2025" },
