@@ -319,14 +319,30 @@ window.PORTFOLIO = {
   /* Corporate Communications & Organizational Change Management section.
      Intro and card bullets are Jeanne's own wording. */
   comms: {
+    featured: {
+      eyebrow: "Featured expertise",
+      title: "Corporate Communications & Change Management",
+      text: "Translating enterprise transformation into clear executive messaging, employee communications, digital content, and successful organizational adoption.",
+      link: "Explore Communications Work",
+    },
     intro: "I translate complex organizational and technology changes into clear, actionable communications. My experience spans executive messaging, stakeholder engagement, enterprise software rollouts, employee enablement, and digital collaboration platforms. I focus on helping people understand what's changing, why it matters, and how to successfully adopt new ways of working.",
     cards: [
       { title: "Corporate & Internal Communications", items: ["Leadership announcements and executive messaging", "Employee-facing change communications", "Audience-specific messaging and communications plans", "Project updates, FAQs, and stakeholder briefings"] },
       { title: "Intranet & Digital Content", items: ["SharePoint Online site development", "Content organization, hubs, and navigation", "Internal knowledge-sharing resources", "Digital communications and employee self-service content"] },
-      { title: "Executive Presentations", items: ["Executive PowerPoint presentations", "Leadership briefings and decision narratives", "Program updates and transformation roadmaps", "Risk, impact, and readiness reporting"] },
+      { title: "Executive Presentations", items: ["Executive PowerPoint presentations", "Executive dashboards and data visuals in Tableau and Power BI", "Leadership briefings and decision narratives", "Program updates and transformation roadmaps", "Risk, impact, and readiness reporting"] },
       { title: "Organizational Change Management", items: ["Stakeholder identification and impact assessment", "Change communications strategy", "Leadership and employee engagement", "Organizational readiness and adoption measurement"] },
-      { title: "Enterprise Technology Implementations", items: ["Business communications for enterprise system rollouts", "Training and enablement", "Go-live and post-launch communications", "Cross-functional coordination across business teams"] },
+      { title: "Enterprise Technology Implementations", items: ["Business communications for enterprise system rollouts", "Training and enablement", "Go-live and post-launch communications", "Cross-functional coordination across business and technology teams"] },
+      { title: "Healthcare Communications", items: ["Multi-facility healthcare transformation", "Clinical and operational stakeholder communications", "Training and operational readiness", "Communications that support adoption without disrupting patient care"] },
     ],
+    /* Real experience only, worded from the resume. */
+    inAction: [
+      { org: "Apple", title: "Stakeholder Communications & Governance", text: "Executive presentations, stakeholder updates, process documentation, user guidance, and communications supporting adoption of a centralized tracking process." },
+      { org: "Amazon", title: "Transformation Communications", text: "Planning tool rollouts, operational enablement, stakeholder communications, and executive business reviews." },
+      { org: "DaVita Kidney Care", title: "Healthcare Change Management", text: "Rollouts of clinical-quality and reporting platforms across 15 facilities, including training, operational readiness, stakeholder engagement, and employee adoption." },
+      { org: "U.S. Renal Care", title: "Multi-Site Change Management", text: "System and process changes across 10 facilities, including employee readiness, training, and operational communications." },
+      { org: "SharePoint Online", title: "Digital Collaboration", text: "Site development, content migration, information architecture, hubs, navigation, and user enablement." },
+    ],
+    cta: "Looking for someone who can turn complex change into clear communications and measurable adoption? Let's connect.",
   },
 
   /* FP&A, Budget Planning & Financial Operations section.

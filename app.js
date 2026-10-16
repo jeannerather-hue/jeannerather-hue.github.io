@@ -136,6 +136,78 @@
     $("#comms-intro").textContent = C.intro;
     $("#comms-grid").innerHTML = C.cards.map((k) =>
       `<div class="comms-card"><h3>${esc(k.title)}</h3><ul>${k.items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div>`).join("");
+    const F = C.featured, hf = $("#hero-feature");
+    if (F && hf) {
+      hf.innerHTML = `<span class="fl-eyebrow">${esc(F.eyebrow)}</span><span class="fl-title">${esc(F.title)}</span><span class="fl-text">${esc(F.text)}</span><span class="fl-go">${esc(F.link)} ${icon.arrow}</span>`;
+      hf.hidden = false;
+    }
+    const act = $("#comms-action");
+    if (C.inAction && C.inAction.length) {
+      act.innerHTML = C.inAction.map((x) => `<li><p class="ca-org">${esc(x.org)}</p><h4>${esc(x.title)}</h4><p>${esc(x.text)}</p></li>`).join("");
+    } else { act.hidden = true; $("#comms-action-title").hidden = true; }
+    const S = window.COMMS_SAMPLES;
+    if (S && S.items && S.items.length) {
+      $("#comms-samples-lede").textContent = "Five example deliverables, built for this portfolio around a fictional company. They show how I write and structure change communications. They are not work done for any employer.";
+      $("#sample-grid").innerHTML = S.items.map((s) => `
+        <a class="sample-card" href="#sample-${esc(s.id)}">
+          <span class="sample-label">${esc(S.label)}</span>
+          <span class="sample-kind">${esc(s.kind)}</span>
+          <span class="sample-title">${esc(s.title)}</span>
+          <span class="sample-sum">${esc(s.summary)}</span>
+          <span class="sample-go">Open sample ${icon.arrow}</span>
+        </a>`).join("");
+    } else { $("#comms-samples").hidden = true; $("#sample-grid").hidden = true; }
+    if (C.cta) $("#comms-cta").innerHTML = `<p>${esc(C.cta)}</p><a class="btn btn-primary" href="#contact">Contact me ${icon.arrow}</a>`;
+  }
+
+  /* ---------- Work sample view (#sample-<id>) ---------- */
+  function sampleBody(sec) {
+    let h = "";
+    (sec.p || []).forEach((t) => { h += `<p>${esc(t)}</p>`; });
+    if (sec.list) h += `<ul>${sec.list.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    if (sec.checklist) h += `<ul class="s-check">${sec.checklist.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    if (sec.qa) h += `<dl class="s-qa">${sec.qa.map((x) => `<dt>${esc(x.q)}</dt><dd>${esc(x.a)}</dd>`).join("")}</dl>`;
+    if (sec.table) h += `<div class="s-table-wrap"><table class="s-table"><thead><tr>${sec.table.head.map((x) => `<th scope="col">${esc(x)}</th>`).join("")}</tr></thead><tbody>${
+      sec.table.rows.map((r) => `<tr>${r.map((x, i) => (i === 0 ? `<th scope="row">${esc(x)}</th>` : `<td>${esc(x)}</td>`)).join("")}</tr>`).join("")}</tbody></table></div>`;
+    if (sec.phases) {
+      const total = sec.phases.reduce((a, p) => a + p.weeks, 0);
+      h += `<div class="s-phases">${sec.phases.map((p, i) => `<div class="s-phase s-phase-${i}" style="flex:${p.weeks} 1 0"><strong>${esc(p.name)}</strong><span>${esc(p.span)}</span></div>`).join("")}</div>`;
+      h += `<p class="note">90 days · ${total} weeks · go-live on Day 43</p>`;
+    }
+    if (sec.slides) h += `<ol class="s-slides">${sec.slides.map((s, i) => `
+      <li class="s-slide"><div class="s-frame"><span class="s-num">${i + 1} / ${sec.slides.length}</span><h3>${esc(s.title)}</h3>${
+        s.bars ? `<div class="s-bars">${s.bars.map((b) => `<div class="s-bar"><span class="s-bl">${esc(b.label)}</span><span class="s-track"><span class="s-fill${b.value >= b.target ? " ok" : ""}" style="width:${b.value}%"></span><span class="s-target" style="left:${b.target}%" title="Target ${b.target}%"></span></span><span class="s-bv">${b.value}% <small>/ ${b.target}%</small></span></div>`).join("")}</div>` : ""
+      }<ul>${s.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>${s.note ? `<p class="s-note"><span>Speaker note</span>${esc(s.note)}</p>` : ""}</li>`).join("")}</ol>`;
+    return h;
+  }
+  function showSample(id) {
+    const S = window.COMMS_SAMPLES;
+    const list = (S && S.items) || [];
+    const idx = list.findIndex((s) => s.id === id);
+    if (idx < 0) return false;
+    const s = list[idx], prev = list[idx - 1], next = list[idx + 1];
+    const view = $("#case-view");
+    view.innerHTML = `
+      <header class="wrap case-hero">
+        <a class="back" href="#comms-samples">← All work samples</a>
+        <p class="eyebrow">${esc(s.kind)} · ${esc(S.org)}</p>
+        <h1 id="case-title" tabindex="-1">${esc(s.title)}</h1>
+        <div class="case-badges"><span class="badge b-sample">${esc(S.label)}</span></div>
+        <p class="sample-disclaimer">${esc(S.disclaimer)}</p>
+        <p class="sample-lead">${esc(s.summary)}</p>
+      </header>
+      <div class="wrap case-body">
+        ${s.sections.map((sec) => `<section class="case-sec${sec.slides || sec.table ? " wide" : ""}"><h2>${esc(sec.label)}</h2><div class="content">${sampleBody(sec)}</div></section>`).join("")}
+        <nav class="case-nav" aria-label="More work samples">
+          ${prev ? `<a href="#sample-${esc(prev.id)}">← ${esc(prev.title)}</a>` : "<span></span>"}
+          ${next ? `<a href="#sample-${esc(next.id)}">${esc(next.title)} →</a>` : ""}
+        </nav>
+      </div>`;
+    homeSections().forEach((x) => (x.hidden = true));
+    view.hidden = false;
+    window.scrollTo(0, 0);
+    const h = $("#case-title"); if (h) h.focus({ preventScroll: true });
+    return true;
   }
 
   function renderTools() {
@@ -290,6 +362,7 @@
     const h = decodeURIComponent((hash || "").replace(/^#/, ""));
     if (push) { try { history.pushState(null, "", "#" + h); } catch (e) { /* sandboxed: ignore */ } }
     if (h.startsWith("case-") && showCase(h.slice(5))) return;
+    if (h.startsWith("sample-") && showSample(h.slice(7))) return;
     $("#case-view").hidden = true;
     homeSections().forEach((s) => (s.hidden = false));
     const el = h && document.getElementById(h);
