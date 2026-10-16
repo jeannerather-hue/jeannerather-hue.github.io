@@ -130,6 +130,14 @@
       `<div class="method"><h3>${esc(m.title)}</h3><p>${esc(m.text)}</p>${m.cases && m.cases.length ? `<p class="seen-in"><span>Seen in</span>${caseLinks(m.cases)}</p>` : ""}</div>`).join("");
   }
 
+  function renderComms() {
+    const C = P.comms;
+    if (!C) { const s = $("#comms"); if (s) s.hidden = true; return; }
+    $("#comms-intro").textContent = C.intro;
+    $("#comms-grid").innerHTML = C.cards.map((k) =>
+      `<div class="comms-card"><h3>${esc(k.title)}</h3><ul>${k.items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></div>`).join("");
+  }
+
   function renderTools() {
     $("#tool-grid").innerHTML = P.tools.map((g) =>
       `<div class="tool-group"><h3>${esc(g.group)}</h3><p>${esc(g.use)}</p>${tags(g.items)}${g.cases && g.cases.length ? `<p class="seen-in"><span>Used in</span>${caseLinks(g.cases)}</p>` : ""}</div>`).join("");
@@ -302,6 +310,6 @@
   window.addEventListener("popstate", route);
 
   setupNav();
-  renderHero(); renderFocusBar(); renderCases(); renderDelivery(); renderTools(); renderProjects(); renderAbout(); renderExperience(); renderContact();
+  renderHero(); renderFocusBar(); renderCases(); renderDelivery(); renderComms(); renderTools(); renderProjects(); renderAbout(); renderExperience(); renderContact();
   route();
 })();

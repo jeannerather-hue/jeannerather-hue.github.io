@@ -316,6 +316,19 @@ window.PORTFOLIO = {
     },
   ],
 
+  /* Corporate Communications & Organizational Change Management section.
+     Intro and card bullets are Jeanne's own wording. */
+  comms: {
+    intro: "I translate complex organizational and technology changes into clear, actionable communications. My experience spans executive messaging, stakeholder engagement, enterprise software rollouts, employee enablement, and digital collaboration platforms. I focus on helping people understand what's changing, why it matters, and how to successfully adopt new ways of working.",
+    cards: [
+      { title: "Corporate & Internal Communications", items: ["Leadership announcements and executive messaging", "Employee-facing change communications", "Audience-specific messaging and communications plans", "Project updates, FAQs, and stakeholder briefings"] },
+      { title: "Intranet & Digital Content", items: ["SharePoint Online site development", "Content organization, hubs, and navigation", "Internal knowledge-sharing resources", "Digital communications and employee self-service content"] },
+      { title: "Executive Presentations", items: ["Executive PowerPoint presentations", "Leadership briefings and decision narratives", "Program updates and transformation roadmaps", "Risk, impact, and readiness reporting"] },
+      { title: "Organizational Change Management", items: ["Stakeholder identification and impact assessment", "Change communications strategy", "Leadership and employee engagement", "Organizational readiness and adoption measurement"] },
+      { title: "Enterprise Technology Implementations", items: ["Business communications for enterprise system rollouts", "Training and enablement", "Go-live and post-launch communications", "Cross-functional coordination across business teams"] },
+    ],
+  },
+
   /* FP&A, Budget Planning & Financial Operations section.
      Case study: only the facts Jeanne confirmed for this section. Result is qualitative; no amounts claimed.
      The interactive demo below it uses fictional data only (see fpa-model.js) and is kept separate. */
