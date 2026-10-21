@@ -50,6 +50,74 @@ window.PORTFOLIO = {
     { title: "Governance and controls", text: "Review forums, monitoring thresholds, budget controls, and vendor evaluation." },
   ],
 
+  /* Business Systems, Program Leadership & Operational Improvement.
+     Every line is taken from the resume or from facts Jeanne stated. Items marked VERIFY in the review notes
+     (direct reports, coaching, DaVita facility openings) come from Jeanne's own description, not the resume. */
+  bizsys: {
+    eyebrow: "Business systems · Program leadership · Operational improvement",
+    title: "Business Systems, Program Leadership & Operational Improvement",
+    summary: "I lead the business systems, workflows, and teams that multi-site operations depend on. I have redesigned an end-to-end planning workflow and its dashboards, led a 500–600-person organization across 15 facilities, and used operational data to fix recurring problems at their source. I connect the roadmap, requirements, testing, release, and adoption so a new system is used and supported after launch, not just delivered.",
+    cases: [
+      {
+        org: "Amazon", caseId: "planning-forecasting",
+        title: "Planning workflow and dashboard redesign",
+        metrics: [{ value: "~40%", label: "shorter planning cycle" }],
+        situation: "The end-to-end planning workflow and its dashboards were slow and didn't give leaders a consistent, timely view of forecasts and resource needs.",
+        did: [
+          "I examined the existing workflow end to end and identified the steps, handoffs, and dependencies that slowed the cycle.",
+          "I translated operational leaders' questions into structured requirements and acceptance criteria.",
+          "I prioritized the backlog and built sprint plans with engineering and analytics partners.",
+          "I coordinated testing and release readiness and carried the change through to validated production use.",
+          "I led adoption through training and enablement, and turned frontline and manager feedback into prioritized enhancements.",
+          "I traced data discrepancies to root cause and corrected upstream logic so leaders worked from reconciled numbers.",
+        ],
+        outcome: "The planning cycle became about 40% shorter, and teams moved to the new workflow and dashboards for daily planning.",
+      },
+      {
+        org: "DaVita Kidney Care", caseId: "compliance-patient-experience",
+        title: "Leading 15 facilities and opening new ones",
+        metrics: [{ value: "~20%", label: "compliance improvement" }, { value: "~25%", label: "higher patient satisfaction" }],
+        situation: "15 facilities and roughly 500–600 staff needed one consistent way to run operations, measure performance, and improve compliance and patient experience.",
+        did: [
+          "I led the organization through facility and functional leaders, with at least 20 direct reports.",
+          "I established governance and review forums, clarified accountability, and held every workstream to one plan and reporting cadence.",
+          "I defined leading indicators and built the performance dashboards and shared metric definitions leaders used to act.",
+          "I coached facility and functional leaders to use performance reporting to set priorities and own results.",
+          "I translated operational needs into system, workflow, and reporting requirements with IT and analytics, and led the rollout of new clinical-quality and reporting platforms across sites.",
+          "I was involved in the construction and opening of new facilities.",
+        ],
+        outcome: "Compliance improved by about 20%, and patient satisfaction rose by about 25%.",
+      },
+      {
+        org: "U.S. Renal Care", caseId: "emergency-supply",
+        title: "Using operational data to fix supply problems",
+        metrics: [{ value: "~30%", label: "less emergency supply use" }, { value: "~15%", label: "higher patient satisfaction" }],
+        situation: "Emergency supply orders were a recurring pain point across 10 facilities. Ordering and inventory routines didn't match each site's actual demand.",
+        did: [
+          "I analyzed ordering and inventory workflows end to end across all 10 facilities and used the data to find the root causes of emergency orders.",
+          "I redesigned the workflows and controls with clinical, operational, and supply-chain partners.",
+          "I standardized inventory data and reporting so service trends were visible across the region.",
+          "I defined leading indicators for patient experience and turned the results into improvement plans with named owners and dates.",
+          "I trained frontline staff on the new workflows and coordinated the rollout across every facility.",
+        ],
+        outcome: "Emergency supply use fell by about 30%, and patient satisfaction rose by about 15%.",
+      },
+    ],
+    current: {
+      label: "Currently",
+      text: "Program Manager (contract) at Apple, Aug 2024 – present. I manage enterprise data and technology programs: the integrated schedule and dependencies, intake, requirements, and backlog prioritization, vendor delivery accountability, risk and decision materials for leadership, and adoption and operational readiness after launch.",
+    },
+    lead: [
+      { title: "I create clarity", text: "I define the goal, owners, and measures up front and write decisions down, so every team works from the same plan." },
+      { title: "I set priorities", text: "I run intake and rank work by value against capacity, budget, and dependencies, so the most important scope lands first." },
+      { title: "I coach leaders", text: "I coach facility and functional leaders to use performance data, own their results, and escalate early." },
+      { title: "I manage dependencies and risks", text: "I keep a live view of dependencies, risks, and open decisions, and raise issues while there is still time to correct them." },
+      { title: "I connect delivery to adoption and support", text: "I plan training, communications, and post-launch support with the release, then use feedback to set the next round of improvements." },
+    ],
+    strengths: ["Roadmap planning", "Workflow analysis", "Requirements", "Backlog prioritization", "Governance", "Decision-making", "Cross-functional delivery", "Testing and release", "Operational support", "Change adoption", "Service improvement", "Executive communication", "Vendor delivery accountability", "Performance dashboards & KPIs", "Budget & resource planning"],
+    tools: ["Jira", "Confluence", "Smartsheet", "MS Project", "SQL", "Tableau", "Power BI", "SharePoint"],
+  },
+
   caseStudies: [
     {
       id: "planning-forecasting",

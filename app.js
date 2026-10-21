@@ -130,6 +130,29 @@
       `<div class="method"><h3>${esc(m.title)}</h3><p>${esc(m.text)}</p>${m.cases && m.cases.length ? `<p class="seen-in"><span>Seen in</span>${caseLinks(m.cases)}</p>` : ""}</div>`).join("");
   }
 
+  function renderBizsys() {
+    const B = P.bizsys, sec = $("#business-systems");
+    if (!B) { if (sec) sec.hidden = true; return; }
+    $("#biz-eyebrow").textContent = B.eyebrow;
+    $("#biz-title").textContent = B.title;
+    $("#biz-summary").textContent = B.summary;
+    $("#biz-cases").innerHTML = B.cases.map((c) => `
+      <article class="biz-case">
+        <p class="biz-org">${esc(c.org)}</p>
+        <h3>${esc(c.title)}</h3>
+        <ul class="biz-metrics">${c.metrics.map((m) => `<li><span class="mv">${esc(m.value)}</span><span class="ml">${esc(m.label)}</span></li>`).join("")}</ul>
+        <div class="biz-part"><h4>Situation</h4><p>${esc(c.situation)}</p></div>
+        <div class="biz-part"><h4>What I did</h4><ul>${c.did.map((d) => `<li>${esc(d)}</li>`).join("")}</ul></div>
+        <div class="biz-part"><h4>Outcome</h4><p>${esc(c.outcome)}</p></div>
+        ${c.caseId ? `<a class="card-more" href="#case-${esc(c.caseId)}">Full case study ${icon.arrow}</a>` : ""}
+      </article>`).join("");
+    const cur = $("#biz-current");
+    if (B.current) cur.innerHTML = `<span>${esc(B.current.label)}</span>${esc(B.current.text)}`; else cur.hidden = true;
+    $("#biz-lead").innerHTML = B.lead.map((l) => `<li><strong>${esc(l.title)}.</strong> ${esc(l.text)}</li>`).join("");
+    $("#biz-strengths").innerHTML = B.strengths.map((t) => `<li>${esc(t)}</li>`).join("");
+    $("#biz-tools").innerHTML = (B.tools || []).map((t) => `<li>${esc(t)}</li>`).join("");
+  }
+
   function renderComms() {
     const C = P.comms;
     if (!C) { const s = $("#comms"); if (s) s.hidden = true; return; }
@@ -383,6 +406,6 @@
   window.addEventListener("popstate", route);
 
   setupNav();
-  renderHero(); renderFocusBar(); renderCases(); renderDelivery(); renderComms(); renderTools(); renderProjects(); renderAbout(); renderExperience(); renderContact();
+  renderHero(); renderBizsys(); renderFocusBar(); renderCases(); renderDelivery(); renderComms(); renderTools(); renderProjects(); renderAbout(); renderExperience(); renderContact();
   route();
 })();

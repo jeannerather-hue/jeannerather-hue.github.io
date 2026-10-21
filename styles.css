@@ -639,3 +639,30 @@ section.block { padding-block: clamp(64px, 9vw, 112px); border-top: 1px solid va
 .s-target { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
 .s-bv { font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; }
 .s-bv small { color: var(--muted); font-weight: 400; }
+
+/* ---------- Business systems, program leadership & operational improvement ---------- */
+.biz-section .section-head { max-width: 780px; }
+.biz-cases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.biz-case { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(16px, 2.4vw, 22px); display: grid; gap: 14px; min-width: 0; }
+.biz-org { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.biz-case h3 { font-size: 1.15rem; margin-top: -8px; }
+.biz-metrics { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 20px; padding-block: 10px; border-block: 1px solid var(--line); }
+.biz-metrics li { display: grid; }
+.biz-metrics .mv { font-family: var(--font-display); font-size: 1.7rem; line-height: 1.1; color: var(--signal); font-variant-numeric: tabular-nums; }
+.biz-metrics .ml { font-size: 0.82rem; color: var(--muted); }
+.biz-part { display: grid; gap: 4px; }
+.biz-part h4 { margin: 0; }
+.biz-part p, .biz-part li { font-size: 0.93rem; }
+.biz-part ul { padding-left: 18px; display: grid; gap: 6px; }
+.biz-part li::marker { color: var(--accent); }
+.biz-case .card-more { margin-left: 0; justify-self: start; }
+.biz-current { margin-top: 20px; padding: 14px 18px; background: var(--sunk); border-radius: var(--radius); font-size: 0.95rem; max-width: 100%; }
+.biz-current span { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-right: 10px; }
+.biz-bottom { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); margin-top: clamp(36px, 5vw, 56px); }
+.biz-lead { list-style: none; display: grid; border-top: 2px solid var(--ink); }
+.biz-lead li { padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 0.95rem; color: var(--muted); }
+.biz-lead strong { color: var(--ink); font-weight: 600; }
+.biz-tags li { background: var(--accent-soft); color: var(--ink); }
+.biz-tools-h { margin-top: 20px; }
+@media (max-width: 1000px) { .biz-cases { grid-template-columns: 1fr; } .biz-case ul { max-width: 70ch; } }
+@media (max-width: 760px) { .biz-bottom { grid-template-columns: 1fr; } }
