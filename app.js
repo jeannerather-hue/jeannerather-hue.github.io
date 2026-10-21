@@ -140,6 +140,7 @@
       <article class="biz-case">
         <p class="biz-org">${esc(c.org)}</p>
         <h3>${esc(c.title)}</h3>
+        ${c.role ? `<p class="biz-role">${esc(c.role)}</p>` : ""}
         <ul class="biz-metrics">${c.metrics.map((m) => `<li><span class="mv">${esc(m.value)}</span><span class="ml">${esc(m.label)}</span></li>`).join("")}</ul>
         <div class="biz-part"><h4>Situation</h4><p>${esc(c.situation)}</p></div>
         <div class="biz-part"><h4>What I did</h4><ul>${c.did.map((d) => `<li>${esc(d)}</li>`).join("")}</ul></div>
