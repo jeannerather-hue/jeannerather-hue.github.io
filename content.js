@@ -437,7 +437,7 @@ window.PORTFOLIO = {
     inAction: [
       { org: "Apple", title: "Stakeholder Communications & Governance", text: "Executive presentations, stakeholder updates, process documentation, user guidance, and communications supporting adoption of a centralized tracking process." },
       { org: "Amazon", title: "Transformation Communications", text: "Planning tool rollouts, operational enablement, stakeholder communications, and executive business reviews." },
-      { org: "DaVita Kidney Care", title: "Healthcare Change Management", text: "Rollouts of clinical-quality and reporting platforms across 15 facilities, including training, operational readiness, stakeholder engagement, and employee adoption." },
+      { org: "DaVita Kidney Care", title: "Healthcare Change Management", text: "Rollouts of enterprise quality and reporting platforms across 15 facilities, including training, operational readiness, stakeholder engagement, and employee adoption." },
       { org: "U.S. Renal Care", title: "Multi-Site Change Management", text: "System and process changes across 10 facilities, including employee readiness, training, and operational communications." },
       { org: "SharePoint Online", title: "Digital Collaboration", text: "Site development, content migration, information architecture, hubs, navigation, and user enablement." },
     ],
