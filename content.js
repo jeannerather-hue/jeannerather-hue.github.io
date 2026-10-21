@@ -103,9 +103,37 @@ window.PORTFOLIO = {
         outcome: "Emergency supply use fell by about 30%, and patient satisfaction rose by about 15%.",
       },
     ],
-    current: {
-      label: "Currently",
-      text: "Program Manager (contract) at Apple, Aug 2024 – present. I manage enterprise data and technology programs: the integrated schedule and dependencies, intake, requirements, and backlog prioritization, vendor delivery accountability, risk and decision materials for leadership, and adoption and operational readiness after launch.",
+    /* Apple: wording from the resume Jeanne submitted for this role. No metrics or outcomes were provided, so none are shown. */
+    apple: {
+      org: "Apple Inc. · Contract",
+      title: "Governance, operating model, and operational controls for a multi-vendor portfolio",
+      role: "Program Manager – Governance, Compliance Controls & Operational Programs",
+      meta: "Seattle, WA (Remote) · 08/2024–Present · Contract",
+      situation: "A multi-vendor portfolio runs on budgets, purchase requisitions, purchase orders, reallocations, and change orders that cross finance, procurement, legal, engineering, and vendor partners. Each of those needs a clear owner, a clear approver, and records that hold up to review.",
+      groups: [
+        { title: "Operating model and decision rights", items: [
+          "I designed the operating model and governance framework for the portfolio, defining ownership, approval authority, decision rights, and escalation paths.",
+        ] },
+        { title: "Operational programs and controls", items: [
+          "I manage the operational programs for budgets, purchase requisitions, purchase orders, reallocations, and change orders.",
+          "I apply consistent controls and documentation across finance, procurement, legal, engineering, and vendor partners.",
+        ] },
+        { title: "Business system", items: [
+          "I built and maintain a centralized Airtable tracking system with validation rules, standard definitions, and audit-ready records.",
+        ] },
+        { title: "AI governance", items: [
+          "I translate policy, privacy, and data-use requirements into practical review steps and controls.",
+        ] },
+        { title: "Process improvement", items: [
+          "I identify process gaps, recurring discrepancies, and compliance risks.",
+          "I lead root-cause analysis with finance and procurement partners and drive fixes upstream.",
+        ] },
+        { title: "Metrics and leadership reporting", items: [
+          "I define metrics and dashboards for intake volume, approval cycle time, and open issues.",
+          "I report program health, risks, and trends to leaders.",
+        ] },
+      ],
+      shows: ["Business systems & operating models", "Governance & decision rights", "Cross-functional partnerships", "Operational controls", "Insights from recurring issues", "Process improvement", "Metrics & dashboards", "Executive communication"],
     },
     lead: [
       { title: "I create clarity", text: "I define the goal, owners, and measures up front and write decisions down, so every team works from the same plan." },

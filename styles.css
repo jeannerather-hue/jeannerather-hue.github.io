@@ -666,3 +666,15 @@ section.block { padding-block: clamp(64px, 9vw, 112px); border-top: 1px solid va
 .biz-tools-h { margin-top: 20px; }
 @media (max-width: 1000px) { .biz-cases { grid-template-columns: 1fr; } .biz-case ul { max-width: 70ch; } }
 @media (max-width: 760px) { .biz-bottom { grid-template-columns: 1fr; } }
+.biz-apple { margin-top: 16px; }
+.biz-apple-head { display: grid; gap: 6px; }
+.biz-apple-head h3 { margin-top: 0; font-size: 1.25rem; }
+.biz-apple-role { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.93rem; }
+.biz-apple-role span { color: var(--muted); }
+.biz-apple .biz-part > p { max-width: 75ch; }
+.biz-apple-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 28px; margin-top: 4px; }
+.biz-apple-grid > div { min-width: 0; display: grid; gap: 4px; align-content: start; }
+.biz-g { font-weight: 600; font-size: 0.93rem; }
+@media (max-width: 1000px) { .biz-apple-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .biz-apple-grid { grid-template-columns: 1fr; } }
+.biz-part ul.tags { display: flex; padding-left: 0; gap: 6px; }

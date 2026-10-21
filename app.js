@@ -146,8 +146,20 @@
         <div class="biz-part"><h4>Outcome</h4><p>${esc(c.outcome)}</p></div>
         ${c.caseId ? `<a class="card-more" href="#case-${esc(c.caseId)}">Full case study ${icon.arrow}</a>` : ""}
       </article>`).join("");
-    const cur = $("#biz-current");
-    if (B.current) cur.innerHTML = `<span>${esc(B.current.label)}</span>${esc(B.current.text)}`; else cur.hidden = true;
+    const ap = $("#biz-apple"), A = B.apple;
+    if (A) {
+      ap.innerHTML = `
+        <div class="biz-apple-head">
+          <p class="biz-org">${esc(A.org)}</p>
+          <h3>${esc(A.title)}</h3>
+          <p class="biz-apple-role"><strong>${esc(A.role)}</strong><span>${esc(A.meta)}</span></p>
+        </div>
+        <div class="biz-part"><h4>Situation</h4><p>${esc(A.situation)}</p></div>
+        <div class="biz-part"><h4>What I did</h4>
+          <div class="biz-apple-grid">${A.groups.map((g) => `<div><p class="biz-g">${esc(g.title)}</p><ul>${g.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div>
+        </div>
+        <div class="biz-part"><h4>What this shows</h4><ul class="tags biz-tags">${A.shows.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    } else ap.hidden = true;
     $("#biz-lead").innerHTML = B.lead.map((l) => `<li><strong>${esc(l.title)}.</strong> ${esc(l.text)}</li>`).join("");
     $("#biz-strengths").innerHTML = B.strengths.map((t) => `<li>${esc(t)}</li>`).join("");
     $("#biz-tools").innerHTML = (B.tools || []).map((t) => `<li>${esc(t)}</li>`).join("");
