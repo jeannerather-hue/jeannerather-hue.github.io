@@ -106,10 +106,11 @@ window.PORTFOLIO = {
     /* Apple: wording from the resume Jeanne submitted for this role. No metrics or outcomes were provided, so none are shown. */
     apple: {
       org: "Apple Inc. · Contract",
+      caseId: "budget-prpo-system",
       title: "Governance, operating model, and operational controls for a multi-vendor portfolio",
       role: "Program Manager – Governance, Compliance Controls & Operational Programs",
       meta: "Seattle, WA (Remote) · 08/2024–Present · Contract",
-      situation: "A multi-vendor portfolio runs on budgets, purchase requisitions, purchase orders, reallocations, and change orders that cross finance, procurement, legal, engineering, and vendor partners. Each of those needs a clear owner, a clear approver, and records that hold up to review.",
+      situation: "I saw an opportunity to make ownership, approvals, and documentation clearer across a complex vendor portfolio, where budgets, purchase requisitions, purchase orders, reallocations, and change orders cross finance, procurement, legal, engineering, and vendor partners.",
       groups: [
         { title: "Operating model and decision rights", items: [
           "I designed the operating model and governance framework for the portfolio, defining ownership, approval authority, decision rights, and escalation paths.",
@@ -204,7 +205,7 @@ window.PORTFOLIO = {
     {
       id: "budget-prpo-system",
       title: "A single source of truth for vendor budgets and PR/POs",
-      org: "Global technology company · Contract",
+      org: "Apple · Contract",
       role: "Budget controls and portfolio reporting. I designed and built the tracking system.",
       focus: ["ops", "bizops", "tpm"],
       metrics: [],
@@ -449,7 +450,7 @@ window.PORTFOLIO = {
     title: "FP&A, Budget Planning & Financial Operations",
     intro: "How I run budget and financial operations for technology programs: one tracked record for budgets, reallocations, purchase requisitions and purchase orders, and change orders. Below the case study, an interactive model shows the planning concepts with fictional numbers.",
     caseStudy: {
-      org: "Global technology company · Contract",
+      org: "Apple · Contract",
       title: "Budget and financial operations",
       summary: "I led the program and financial operations work for a portfolio of program budgets, and built the centralized system that tracked it.",
       challenge: "Budget tracking, budget reallocations, purchase requisitions and purchase orders (PR/POs), and change orders all had to be tracked, approved and kept in step with one another. Each one changes what has been spent, what is committed, and what is still available.",
@@ -481,7 +482,7 @@ window.PORTFOLIO = {
   },
 
   experience: [
-    { org: "Apple", title: "Program Manager – Enterprise Data & Technology Program Delivery (Contract)", dates: "Aug 2024 – Present" },
+    { org: "Apple", title: "Program Manager – Governance, Compliance Controls & Operational Programs (Contract)", dates: "Aug 2024 – Present" },
     { org: "TRAC Associates", title: "Senior Program Manager – Multi-Stakeholder Program Delivery & Governance (Contract)", dates: "Aug 2024 – Oct 2025" },
     { org: "Classic Impressions", title: "Operations & Program Manager – Systems, Vendor & Process Delivery", dates: "Jan 2023 – Aug 2024" },
     { org: "Amazon", title: "Senior Program Manager – Workforce Planning & Labor Forecasting Systems", dates: "Oct 2020 – Jan 2023" },

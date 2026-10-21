@@ -158,7 +158,8 @@
         <div class="biz-part"><h4>What I did</h4>
           <div class="biz-apple-grid">${A.groups.map((g) => `<div><p class="biz-g">${esc(g.title)}</p><ul>${g.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div>
         </div>
-        <div class="biz-part"><h4>What this shows</h4><ul class="tags biz-tags">${A.shows.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+        <div class="biz-part"><h4>What this shows</h4><ul class="tags biz-tags">${A.shows.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>
+        ${A.caseId ? `<a class="card-more" href="#case-${esc(A.caseId)}">Tracking system case study ${icon.arrow}</a>` : ""}`;
     } else ap.hidden = true;
     $("#biz-lead").innerHTML = B.lead.map((l) => `<li><strong>${esc(l.title)}.</strong> ${esc(l.text)}</li>`).join("");
     $("#biz-strengths").innerHTML = B.strengths.map((t) => `<li>${esc(t)}</li>`).join("");
