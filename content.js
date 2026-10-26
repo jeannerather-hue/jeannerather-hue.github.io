@@ -48,6 +48,10 @@ window.PORTFOLIO = {
     { title: "Operations improvement", text: "Forecasting, inventory and replenishment, and workflow redesign, rolled out across many sites." },
     { title: "Data and measurement", text: "KPIs and metric definitions, validation and reconciliation, dashboards, and source-of-record ownership." },
     { title: "Governance and controls", text: "Review forums, monitoring thresholds, budget controls, and vendor evaluation." },
+    { title: "Workday systems", text: "Hands-on Workday administration across HCM, Financial Management, and Adaptive Planning: integrations (EIB, Studio, Core Connectors, PICOF, web services and REST APIs), security groups, business processes, tenant management, upgrades, and SOX/ITGC controls." },
+    { title: "Delivery and marketplace programs", text: "At Amazon, delivery promise and speed initiatives for online orders, and seller and marketplace programs that improved seller fulfillment performance." },
+    { title: "Security, privacy, and accessibility", text: "Vendor and system security and privacy reviews, security tool rollouts (SSO, MFA, endpoint, network), and web accessibility (WCAG) standards and testing at Apple." },
+    { title: "Engagement financials", text: "Bill rates, gross margins, profitability, burn rates, team hours against SOWs, and revenue forecasting." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
@@ -303,7 +307,7 @@ window.PORTFOLIO = {
   tools: [
     { group: "Program delivery", use: "To organize plans, backlogs, schedules, and status.", items: ["Jira", "Confluence", "Rally", "Aha!", "Azure DevOps", "Smartsheet", "Microsoft Project", "Microsoft Planner", "Asana", "monday.com", "Wrike", "ClickUp", "Trello"], cases: ["payer-implementation"] },
     { group: "Collaboration & workflow", use: "To communicate, document work, map processes, and track requests and approvals. I built the budget and PR/PO tracking system in Airtable.", items: ["SharePoint", "Microsoft Teams", "Google Workspace", "Slack", "Zoom", "Notion", "Airtable", "Miro", "Mural", "Visio / Lucidchart", "ServiceNow", "DocuSign", "Salesforce"], cases: ["budget-prpo-system", "payer-implementation"] },
-    { group: "Enterprise systems", use: "ERP, HR, and workforce systems I've worked in and with across operations programs.", items: ["SAP", "Workday", "Oracle", "PeopleSoft", "Infor Lawson", "Kronos / UKG"], cases: [] },
+    { group: "Enterprise systems", use: "ERP, HR, and workforce systems I've worked in and with across operations programs.", items: ["SAP", "Workday HCM", "Workday Financials", "Workday Adaptive Planning", "Workday EIB / Studio / Core Connectors", "Oracle", "PeopleSoft", "Infor Lawson", "Kronos / UKG"], cases: [] },
     { group: "Healthcare systems", use: "Clinical, workforce, supply, quality, and planning systems from my healthcare operations work.", items: ["Epic", "Epic Clarity / Caboodle", "Cerner (Oracle Health)", "Meditech", "athenahealth", "eClinicalWorks", "Anaplan", "Press Ganey", "HealthStream", "Omnicell", "Pyxis", "Vizient", "Midas"], cases: ["emergency-supply", "compliance-patient-experience"] },
     { group: "Data & analytics", use: "Hands-on, for analysis, reporting, validation, and reconciliation.", items: ["Excel", "SQL", "Python", "R", "scikit-learn", "Tableau", "Power BI", "Snowflake", "dbt", "Databricks", "Looker", "Hex", "Tableau Prep", "Alteryx"], cases: [] },
     { group: "Data platforms & MDM", use: "Platforms in an enterprise data program I coordinated.", items: ["Microsoft Fabric", "Profisee MDM", "Coalesce"], cases: ["data-platform-mdm"] },
@@ -487,7 +491,7 @@ window.PORTFOLIO = {
     { org: "Apple", title: "Program Manager – Business Systems, Portfolio Governance & Technology Partnership (Contract)", dates: "Aug 2024 – Present" },
     { org: "TRAC Associates", title: "Senior Program Manager – Program Transformation & Operating Model (Contract)", dates: "Aug 2024 – Oct 2025" },
     { org: "Classic Impressions", title: "Operations & Program Manager – Business Systems & Process Transformation", dates: "Jan 2023 – Aug 2024" },
-    { org: "Amazon", title: "Senior Program Manager – Planning Systems & Technology Delivery", dates: "Oct 2020 – Jan 2023" },
+    { org: "Amazon", title: "Senior Program Manager – Planning Systems, Delivery Promise & Seller Programs", dates: "Oct 2020 – Jan 2023" },
     { org: "U.S. Renal Care", title: "Regional Program Manager – Multi-Site Transformation & Systems Adoption", dates: "Apr 2018 – Sep 2020" },
     { org: "DaVita Kidney Care", title: "Senior Program Operations Director – Multi-Site Operations & Systems Transformation", dates: "May 2008 – Mar 2018" },
   ],
