@@ -54,6 +54,8 @@ window.PORTFOLIO = {
     { title: "Engagement financials", text: "Bill rates, gross margins, profitability, burn rates, team hours against SOWs, and revenue forecasting." },
     { title: "AI adoption", text: "Use AI tools daily for planning, documentation, and reporting; identify practical use cases, build human review into AI-assisted workflows, and help teams adopt AI to reduce manual work." },
     { title: "ERP and HCM implementations", text: "Led SAP and Workday implementations at Amazon, US Renal Care, DaVita, and Classic Impressions from requirements through build, test, go-live, and adoption." },
+    { title: "Outsourced partner management", text: "Managed outsourced contact center and BPO partners against service-level, quality, and cost KPIs." },
+    { title: "Post-merger integration", text: "Led integration from Day 1 through Day 100: governance, process alignment, SOPs, reporting, and handover across combined operations." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
