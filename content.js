@@ -52,6 +52,8 @@ window.PORTFOLIO = {
     { title: "Delivery and marketplace programs", text: "At Amazon, delivery promise and speed initiatives for online orders, and seller and marketplace programs that improved seller fulfillment performance." },
     { title: "Security, privacy, and accessibility", text: "Vendor and system security and privacy reviews, security tool rollouts (SSO, MFA, endpoint, network), and web accessibility (WCAG) standards and testing at Apple." },
     { title: "Engagement financials", text: "Bill rates, gross margins, profitability, burn rates, team hours against SOWs, and revenue forecasting." },
+    { title: "AI adoption", text: "Use AI tools daily for planning, documentation, and reporting; identify practical use cases, build human review into AI-assisted workflows, and help teams adopt AI to reduce manual work." },
+    { title: "ERP and HCM implementations", text: "Led SAP and Workday implementations at Amazon, US Renal Care, DaVita, and Classic Impressions from requirements through build, test, go-live, and adoption." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
