@@ -56,6 +56,9 @@ window.PORTFOLIO = {
     { title: "ERP and HCM implementations", text: "Led SAP and Workday implementations at Amazon, US Renal Care, DaVita, and Classic Impressions from requirements through build, test, go-live, and adoption." },
     { title: "Outsourced partner management", text: "Managed outsourced contact center and BPO partners against service-level, quality, and cost KPIs." },
     { title: "Post-merger integration", text: "Led integration from Day 1 through Day 100: governance, process alignment, SOPs, reporting, and handover across combined operations." },
+    { title: "Healthcare data interoperability", text: "Hands-on with HL7, CCDA, and ADT data; analyzed HIE integrations and networks including Carequality, CommonWell, eHealthExchange, and TEFCA/QHIN; reconciled claims and EOBs to clinical encounters; evaluated clinical data vendors such as Bamboo Health, Particle, Kno2, and HSX." },
+    { title: "Forecasting and predictive models", text: "Build forecasting, predictive risk, and statistical models in Python and SQL with tested, reusable, version-controlled code that give leaders earlier, decision-ready signals." },
+    { title: "Clinical workforce planning", text: "Planned clinical workforce, staffing, onboarding, and readiness across 25 dialysis facilities, managed nurse and physician licensing and credentialing, and led labor-demand forecasting programs at Amazon." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
