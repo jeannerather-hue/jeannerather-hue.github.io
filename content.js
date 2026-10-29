@@ -59,6 +59,7 @@ window.PORTFOLIO = {
     { title: "Healthcare data interoperability", text: "Hands-on with HL7, CCDA, and ADT data; analyzed HIE integrations and networks including Carequality, CommonWell, eHealthExchange, and TEFCA/QHIN; reconciled claims and EOBs to clinical encounters; evaluated clinical data vendors such as Bamboo Health, Particle, Kno2, and HSX." },
     { title: "Forecasting and predictive models", text: "Build forecasting, predictive risk, and statistical models in Python and SQL with tested, reusable, version-controlled code that give leaders earlier, decision-ready signals." },
     { title: "Clinical workforce planning", text: "Planned clinical workforce, staffing, onboarding, and readiness across 25 dialysis facilities, managed nurse and physician licensing and credentialing, and led labor-demand forecasting programs at Amazon." },
+    { title: "Data governance and catalogs", text: "Implemented and administered Collibra, Alation, and Atlan; led data governance councils that set standards, ownership, definitions, and access controls across business, data, and technology teams." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
