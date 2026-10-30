@@ -1,57 +1,68 @@
 /* ============================================================
    Design tokens — change colors and fonts here.
-   Plum, rose, and warm ivory: an executive, feminine palette.
+   Feminine executive palette: deep plum, blush, warm ivory, champagne gold.
    ============================================================ */
-/* Layout: one long scannable page — results strip up top, case cards, tools grid, projects, contact. Plum + berry rose on warm ivory paper. */
+/* Layout: one long scannable page — results strip up top, case cards, tools grid, projects, contact. */
+/* Theme: feminine executive - deep plum, blush, warm ivory, champagne gold */
 :root {
-  --paper: #FAF6F4;
+  --paper: #FBF7F4;
   --surface: #FFFFFF;
-  --sunk: #F3EAE8;
-  --ink: #2A1E2B;
-  --muted: #625567;
-  --line: #E7DCDC;
-  --accent: #6E3A5E;
-  --accent-strong: #4E2443;
-  --accent-soft: #F3E5EE;
+  --sunk: #F4EAE6;
+  --ink: #2B1D26;
+  --muted: #6E5A66;
+  --line: #E9DBD5;
+  --accent: #7B2D4E;
+  --accent-strong: #5A1F39;
+  --accent-soft: #F6E6EC;
   --accent-ink: #FFFFFF;
-  --signal: #A23B5D;
-  --band: #3A2236;
-  --band-ink: #FFF8F6;
-  --band-muted: #E4CCD9;
+  --signal: #A0526A;
+  --band: #4A1D33;
+  --band-ink: #FFFFFF;
+  --band-muted: #EBCFDA;
+  --gold: #B08D57;
+  --gold-text: #86642F;
 
-  --ok: #2B6A45;      --ok-soft: #E2F0E6;
-  --info: #3F4F86;    --info-soft: #E6E9F6;
+  --ok: #2B6A45;      --ok-soft: #DFEFE5;
+  --info: #5A4A8A;    --info-soft: #ECE8F6;
   --warn: #8A4F00;    --warn-soft: #F8EAD3;
-  --neutral: #5A4E5C; --neutral-soft: #EFE8EC;
+  --neutral: #5E5059; --neutral-soft: #EFE8EB;
 
   --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Lato", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Jost", "Lato", system-ui, sans-serif;
 
-  --radius: 12px;
+  --radius: 14px;
   --wrap: 1160px;
   --gutter: clamp(16px, 4vw, 40px);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #1A1419; --surface: #231B22; --sunk: #2C222B;
-    --ink: #F4EAEF; --muted: #BFAEBA; --line: #3E303C;
-    --accent: #DDB3CB; --accent-strong: #F0D3E3; --accent-soft: #3B2837; --accent-ink: #1A1419;
-    --signal: #EE9BB5; --band: #2E1C2B; --band-ink: #FBF1F5; --band-muted: #D8BBCB;
-    --ok: #8FD1A6; --ok-soft: #1A3225; --info: #AFB9EA; --info-soft: #232A44;
-    --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #C2B6BF; --neutral-soft: #2F262E;
+    --paper: #1A1318; --surface: #231A20; --sunk: #2C2128;
+    --ink: #F4ECEF; --muted: #C2AEB8; --line: #3B2D35;
+    --accent: #E7AFC4; --accent-strong: #F4CDDB; --accent-soft: #3A2330; --accent-ink: #1A1318;
+    --signal: #EBA7B9; --band: #2E1622; --band-ink: #FBF3F6; --band-muted: #DDB9C7; --gold: #D8B77E; --gold-text: #D8B77E;
+    --ok: #8FD1A6; --ok-soft: #1A3225; --info: #C1B4EA; --info-soft: #2A2440;
+    --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #C7B8C0; --neutral-soft: #33282E;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #1A1419; --surface: #231B22; --sunk: #2C222B;
-  --ink: #F4EAEF; --muted: #BFAEBA; --line: #3E303C;
-  --accent: #DDB3CB; --accent-strong: #F0D3E3; --accent-soft: #3B2837; --accent-ink: #1A1419;
-  --signal: #EE9BB5; --band: #2E1C2B; --band-ink: #FBF1F5; --band-muted: #D8BBCB;
-  --ok: #8FD1A6; --ok-soft: #1A3225; --info: #AFB9EA; --info-soft: #232A44;
-  --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #C2B6BF; --neutral-soft: #2F262E;
+  --paper: #1A1318; --surface: #231A20; --sunk: #2C2128;
+  --ink: #F4ECEF; --muted: #C2AEB8; --line: #3B2D35;
+  --accent: #E7AFC4; --accent-strong: #F4CDDB; --accent-soft: #3A2330; --accent-ink: #1A1318;
+  --signal: #EBA7B9; --band: #2E1622; --band-ink: #FBF3F6; --band-muted: #DDB9C7; --gold: #D8B77E; --gold-text: #D8B77E;
+  --ok: #8FD1A6; --ok-soft: #1A3225; --info: #C1B4EA; --info-soft: #2A2440;
+  --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #C7B8C0; --neutral-soft: #33282E;
   color-scheme: dark;
 }
+/* Executive accents */
+h1, h2 { letter-spacing: 0 !important; }
+.eyebrow, h4, .card-org, .badge { letter-spacing: 0.14em !important; }
+.eyebrow { color: var(--gold-text) !important; }
+.hero h1::after { content: ""; display: block; width: 72px; height: 2px; background: var(--gold); margin-top: 22px; }
+.proof { border-top-color: var(--accent) !important; }
+.case-card { border-radius: var(--radius); }
+.case-card:hover { border-color: var(--gold) !important; box-shadow: 0 10px 30px -18px rgba(74, 29, 51, .45) !important; }
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
@@ -70,7 +81,7 @@ ul, ol, dl { margin: 0; padding: 0; }
 .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: var(--gutter); }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 6px; z-index: 100; }
 .skip:focus { left: 8px; }
-.eyebrow { font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--signal); font-weight: 600; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 500; }
 
 /* ---------- Header ---------- */
 .site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: saturate(1.2) blur(8px); -webkit-backdrop-filter: saturate(1.2) blur(8px); border-bottom: 1px solid var(--line); }
