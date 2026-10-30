@@ -62,6 +62,7 @@ window.PORTFOLIO = {
     { title: "Data governance and catalogs", text: "Implemented and administered Collibra, Alation, and Atlan; led data governance councils that set standards, ownership, definitions, and access controls across business, data, and technology teams." },
     { title: "Project management frameworks", text: "PMBOK-aligned planning and control, Agile and Scrum, Waterfall, and hybrid delivery: schedules, work breakdown structures, critical path, risk registers, resource allocation, and performance tracking." },
     { title: "Program practice leadership", text: "Lead and coach teams of program managers and people managers; build program practices with standards, review forums, decision rhythms, templates, and shared tools that help teams make good choices on time." },
+    { title: "Work management platforms", text: "Hands-on Adobe Workfront administration: workflow configuration, reporting, and taxonomy; translating offline processes into scalable digital workflows; driving adoption, onboarding, and training; and setting data quality and governance standards." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
@@ -315,7 +316,7 @@ window.PORTFOLIO = {
   },
 
   tools: [
-    { group: "Program delivery", use: "To organize plans, backlogs, schedules, and status.", items: ["Jira", "Confluence", "Rally", "Aha!", "Azure DevOps", "Smartsheet", "Microsoft Project", "Microsoft Planner", "Asana", "monday.com", "Wrike", "ClickUp", "Trello"], cases: ["payer-implementation"] },
+    { group: "Program delivery", use: "To organize plans, backlogs, schedules, and status.", items: ["Jira", "Confluence", "Rally", "Aha!", "Azure DevOps", "Smartsheet", "Adobe Workfront", "Microsoft Project", "Microsoft Planner", "Asana", "monday.com", "Wrike", "ClickUp", "Trello"], cases: ["payer-implementation"] },
     { group: "Collaboration & workflow", use: "To communicate, document work, map processes, and track requests and approvals. I built the budget and PR/PO tracking system in Airtable.", items: ["SharePoint", "Microsoft Teams", "Google Workspace", "Slack", "Zoom", "Notion", "Airtable", "Miro", "Mural", "Visio / Lucidchart", "ServiceNow", "DocuSign", "Salesforce"], cases: ["budget-prpo-system", "payer-implementation"] },
     { group: "Enterprise systems", use: "ERP, HR, and workforce systems I've worked in and with across operations programs.", items: ["SAP", "Workday HCM", "Workday Financials", "Workday Adaptive Planning", "Workday EIB / Studio / Core Connectors", "Oracle", "PeopleSoft", "Infor Lawson", "Kronos / UKG"], cases: [] },
     { group: "Healthcare systems", use: "Clinical, workforce, supply, quality, and planning systems from my healthcare operations work.", items: ["Epic", "Epic Clarity / Caboodle", "Cerner (Oracle Health)", "Meditech", "athenahealth", "eClinicalWorks", "Anaplan", "Press Ganey", "HealthStream", "Omnicell", "Pyxis", "Vizient", "Midas"], cases: ["emergency-supply", "compliance-patient-experience"] },
