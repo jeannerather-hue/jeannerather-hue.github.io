@@ -1,32 +1,32 @@
 /* ============================================================
    Design tokens — change colors and fonts here.
-   Accent #45546B matches the slate blue on the resume.
+   Plum, rose, and warm ivory: an executive, feminine palette.
    ============================================================ */
-/* Layout: one long scannable page — results strip up top, case cards, tools grid, projects, contact. Slate + teal on a cool paper. */
+/* Layout: one long scannable page — results strip up top, case cards, tools grid, projects, contact. Plum + berry rose on warm ivory paper. */
 :root {
-  --paper: #F4F5F7;
+  --paper: #FAF6F4;
   --surface: #FFFFFF;
-  --sunk: #E8EBF0;
-  --ink: #1B2230;
-  --muted: #515A69;
-  --line: #D5DAE2;
-  --accent: #45546B;
-  --accent-strong: #2C3A50;
-  --accent-soft: #E1E6EE;
+  --sunk: #F3EAE8;
+  --ink: #2A1E2B;
+  --muted: #625567;
+  --line: #E7DCDC;
+  --accent: #6E3A5E;
+  --accent-strong: #4E2443;
+  --accent-soft: #F3E5EE;
   --accent-ink: #FFFFFF;
-  --signal: #0E6B63;
-  --band: #2C3A50;
-  --band-ink: #FFFFFF;
-  --band-muted: #C9D3E2;
+  --signal: #A23B5D;
+  --band: #3A2236;
+  --band-ink: #FFF8F6;
+  --band-muted: #E4CCD9;
 
-  --ok: #2B6A45;      --ok-soft: #DFEFE5;
-  --info: #2A5784;    --info-soft: #DFE9F5;
+  --ok: #2B6A45;      --ok-soft: #E2F0E6;
+  --info: #3F4F86;    --info-soft: #E6E9F6;
   --warn: #8A4F00;    --warn-soft: #F8EAD3;
-  --neutral: #4D5563; --neutral-soft: #E8EAEE;
+  --neutral: #5A4E5C; --neutral-soft: #EFE8EC;
 
-  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-mono: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --radius: 12px;
   --wrap: 1160px;
@@ -34,22 +34,22 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #12161D; --surface: #1A1F28; --sunk: #222833;
-    --ink: #E7EAF0; --muted: #A3ABB9; --line: #303846;
-    --accent: #A9B8D0; --accent-strong: #CBD6E8; --accent-soft: #263142; --accent-ink: #12161D;
-    --signal: #5CC4B8; --band: #1F2B3D; --band-ink: #F3F6FA; --band-muted: #B5C1D3;
-    --ok: #8FD1A6; --ok-soft: #1A3225; --info: #9CC2EA; --info-soft: #1A2B3E;
-    --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #B3B8C2; --neutral-soft: #2A2F38;
+    --paper: #1A1419; --surface: #231B22; --sunk: #2C222B;
+    --ink: #F4EAEF; --muted: #BFAEBA; --line: #3E303C;
+    --accent: #DDB3CB; --accent-strong: #F0D3E3; --accent-soft: #3B2837; --accent-ink: #1A1419;
+    --signal: #EE9BB5; --band: #2E1C2B; --band-ink: #FBF1F5; --band-muted: #D8BBCB;
+    --ok: #8FD1A6; --ok-soft: #1A3225; --info: #AFB9EA; --info-soft: #232A44;
+    --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #C2B6BF; --neutral-soft: #2F262E;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #12161D; --surface: #1A1F28; --sunk: #222833;
-  --ink: #E7EAF0; --muted: #A3ABB9; --line: #303846;
-  --accent: #A9B8D0; --accent-strong: #CBD6E8; --accent-soft: #263142; --accent-ink: #12161D;
-  --signal: #5CC4B8; --band: #1F2B3D; --band-ink: #F3F6FA; --band-muted: #B5C1D3;
-  --ok: #8FD1A6; --ok-soft: #1A3225; --info: #9CC2EA; --info-soft: #1A2B3E;
-  --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #B3B8C2; --neutral-soft: #2A2F38;
+  --paper: #1A1419; --surface: #231B22; --sunk: #2C222B;
+  --ink: #F4EAEF; --muted: #BFAEBA; --line: #3E303C;
+  --accent: #DDB3CB; --accent-strong: #F0D3E3; --accent-soft: #3B2837; --accent-ink: #1A1419;
+  --signal: #EE9BB5; --band: #2E1C2B; --band-ink: #FBF1F5; --band-muted: #D8BBCB;
+  --ok: #8FD1A6; --ok-soft: #1A3225; --info: #AFB9EA; --info-soft: #232A44;
+  --warn: #F0C27D; --warn-soft: #3A2C16; --neutral: #C2B6BF; --neutral-soft: #2F262E;
   color-scheme: dark;
 }
 
@@ -70,7 +70,7 @@ ul, ol, dl { margin: 0; padding: 0; }
 .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: var(--gutter); }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 6px; z-index: 100; }
 .skip:focus { left: 8px; }
-.eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 500; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--signal); font-weight: 600; }
 
 /* ---------- Header ---------- */
 .site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: saturate(1.2) blur(8px); -webkit-backdrop-filter: saturate(1.2) blur(8px); border-bottom: 1px solid var(--line); }
