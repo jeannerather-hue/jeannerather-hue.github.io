@@ -61,6 +61,7 @@ window.PORTFOLIO = {
     { title: "Clinical workforce planning", text: "Planned clinical workforce, staffing, onboarding, and readiness across 25 dialysis facilities, managed nurse and physician licensing and credentialing, and led labor-demand forecasting programs at Amazon." },
     { title: "Data governance and catalogs", text: "Implemented and administered Collibra, Alation, and Atlan; led data governance councils that set standards, ownership, definitions, and access controls across business, data, and technology teams." },
     { title: "Project management frameworks", text: "PMBOK-aligned planning and control, Agile and Scrum, Waterfall, and hybrid delivery: schedules, work breakdown structures, critical path, risk registers, resource allocation, and performance tracking." },
+    { title: "Program practice leadership", text: "Lead and coach teams of program managers and people managers; build program practices with standards, review forums, decision rhythms, templates, and shared tools that help teams make good choices on time." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
