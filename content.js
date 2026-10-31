@@ -63,6 +63,7 @@ window.PORTFOLIO = {
     { title: "Project management frameworks", text: "PMBOK-aligned planning and control, Agile and Scrum, Waterfall, and hybrid delivery: schedules, work breakdown structures, critical path, risk registers, resource allocation, and performance tracking." },
     { title: "Program practice leadership", text: "Lead and coach teams of program managers and people managers; build program practices with standards, review forums, decision rhythms, templates, and shared tools that help teams make good choices on time." },
     { title: "Work management platforms", text: "Hands-on Adobe Workfront administration: workflow configuration, reporting, and taxonomy; translating offline processes into scalable digital workflows; driving adoption, onboarding, and training; and setting data quality and governance standards." },
+    { title: "Physician and clinical partnership", text: "Former nurse who partners with physicians, nurses, and medical group leaders to design, pilot, and spread clinical workflow changes, grounded in data and shared results." },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.
