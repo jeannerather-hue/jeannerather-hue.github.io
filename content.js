@@ -64,6 +64,7 @@ window.PORTFOLIO = {
     { title: "Program practice leadership", text: "Lead and coach teams of program managers and people managers; build program practices with standards, review forums, decision rhythms, templates, and shared tools that help teams make good choices on time." },
     { title: "Work management platforms", text: "Hands-on Adobe Workfront administration: workflow configuration, reporting, and taxonomy; translating offline processes into scalable digital workflows; driving adoption, onboarding, and training; and setting data quality and governance standards." },
     { title: "Physician and clinical partnership", text: "Former nurse who partners with physicians, nurses, and medical group leaders to design, pilot, and spread clinical workflow changes, grounded in data and shared results." },
+    { title: "Healthcare Analytics & Client Consulting", text: "Translate client and clinical requirements into technical blueprints, define and read out client and program KPIs, and analyze claims, eligibility, and clinical data with SQL and Python to show program value. Former nurse with hands-on knowledge of clinical workflows, medical terminology, and CMS and NCQA requirements.", tags: ["Client Consulting", "Claims & Eligibility Data", "Clinical Workflows", "KPI Readouts", "Tableau", "CMS & NCQA"] },
   ],
 
   /* Business Systems, Program Leadership & Operational Improvement.

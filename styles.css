@@ -690,3 +690,5 @@ section.block { padding-block: clamp(64px, 9vw, 112px); border-top: 1px solid va
 @media (max-width: 600px) { .biz-apple-grid { grid-template-columns: 1fr; } }
 .biz-part ul.tags { display: flex; padding-left: 0; gap: 6px; }
 .biz-role { font-size: 0.86rem; color: var(--muted); margin-top: -8px; }
+.exp-tags { margin-top: 8px; }
+.badge { max-width: 100%; white-space: normal; }

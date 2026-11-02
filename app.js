@@ -307,7 +307,7 @@
   function renderAbout() {
     $("#about-text").innerHTML = P.about.map((p) => `<p>${esc(p)}</p>`).join("");
     $("#education").innerHTML = P.education.map((e) => `<li>${esc(e)}</li>`).join("");
-    $("#expertise").innerHTML = P.expertise.map((x) => `<div><dt>${esc(x.title)}</dt><dd>${esc(x.text)}</dd></div>`).join("");
+    $("#expertise").innerHTML = P.expertise.map((x) => `<div><dt>${esc(x.title)}</dt><dd>${esc(x.text)}${x.tags && x.tags.length ? `<ul class="tags exp-tags">${x.tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}</dd></div>`).join("");
   }
 
   function renderExperience() {
