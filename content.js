@@ -255,6 +255,7 @@ window.PORTFOLIO = {
       did: [
         "I delivered the integrated program plan, tracking milestones, dependencies, risks, and decisions across workstreams.",
         "I delivered the governance structure and clarified workstream ownership and decision rights, including access control, data quality, MDM monitoring, and business validation.",
+        "Mapped customer and master data flows across source systems, documenting sequence, context, and data flow diagrams to align integrations, data models, and release readiness with architecture standards.",
         "I prepared the five-vendor systems-integrator evaluation and decision materials: RFP clarification, evaluator readiness, presentations, and references.",
         "I configured the platforms and metrics for the Elevate ERP modernization and supported it through program coordination, planning, and reporting.",
         "I prepared executive reporting on progress, risks, and decisions.",
@@ -321,12 +322,13 @@ window.PORTFOLIO = {
 
   tools: [
     { group: "Program delivery", use: "To organize plans, backlogs, schedules, and status.", items: ["Jira", "Confluence", "Rally", "Aha!", "Azure DevOps", "Smartsheet", "Adobe Workfront", "Microsoft Project", "Microsoft Planner", "Asana", "monday.com", "Wrike", "ClickUp", "Trello"], cases: ["payer-implementation"] },
-    { group: "Collaboration & workflow", use: "To communicate, document work, map processes, and track requests and approvals. I built the budget and PR/PO tracking system in Airtable.", items: ["SharePoint", "Microsoft Teams", "Google Workspace", "Slack", "Zoom", "Notion", "Airtable", "Miro", "Mural", "Visio / Lucidchart", "ServiceNow", "DocuSign", "Salesforce"], cases: ["budget-prpo-system", "payer-implementation"] },
+    { group: "Collaboration & workflow", use: "To communicate, document work, map processes, and track requests and approvals. I built the budget and PR/PO tracking system in Airtable.", items: ["SharePoint", "Microsoft Teams", "Google Workspace", "Slack", "Zoom", "Notion", "Airtable", "Miro", "Mural", "Visio / Lucidchart (sequence, context & data flow diagrams)", "ServiceNow", "Remedy", "DocuSign", "Salesforce"], cases: ["budget-prpo-system", "payer-implementation"] },
     { group: "Enterprise systems", use: "ERP, HR, and workforce systems I've worked in and with across operations programs.", items: ["SAP", "Workday HCM", "Workday Financials", "Workday Adaptive Planning", "Workday EIB / Studio / Core Connectors", "Oracle", "PeopleSoft", "Infor Lawson", "Kronos / UKG"], cases: [] },
     { group: "Healthcare systems", use: "Clinical, workforce, supply, quality, and planning systems from my healthcare operations work.", items: ["Epic", "Epic Clarity / Caboodle", "Cerner (Oracle Health)", "Meditech", "athenahealth", "eClinicalWorks", "Anaplan", "Press Ganey", "HealthStream", "Omnicell", "Pyxis", "Vizient", "Midas"], cases: ["emergency-supply", "compliance-patient-experience"] },
-    { group: "Data & analytics", use: "Hands-on, for analysis, reporting, validation, and reconciliation.", items: ["Excel", "SQL", "Python", "R", "scikit-learn", "Tableau", "Power BI", "Snowflake", "dbt", "Databricks", "Looker", "Hex", "Tableau Prep", "Alteryx"], cases: [] },
+    { group: "Data & analytics", use: "Hands-on, for analysis, reporting, validation, and reconciliation.", items: ["Excel", "SQL", "Oracle SQL", "DB2", "Python", "R", "scikit-learn", "Tableau", "Power BI", "Snowflake", "dbt", "Databricks", "Looker", "Hex", "Tableau Prep", "Alteryx"], cases: [] },
     { group: "Data platforms & MDM", use: "Platforms in an enterprise data program I coordinated.", items: ["Microsoft Fabric", "Profisee MDM", "Coalesce"], cases: ["data-platform-mdm"] },
     { group: "Cloud & app delivery", use: "Cloud services, code hosting, and the tools I use to build, test, and distribute my iPhone apps.", items: ["AWS", "GitHub", "GitHub Actions", "Apple Developer Program", "App Store Connect", "TestFlight"], cases: [] },
+    { group: "Enterprise Integration & Development", use: "Hands-on tools for building, testing, and documenting enterprise integrations across SOA systems.", items: ["Java / J2EE", "Spring", "REST Web Services", "SOAP Web Services", "SOA Enterprise Systems", "SOAP UI", "XML Spy", "Eclipse", "ClearCase"], cases: [] },
     { group: "AI assistants", use: "For research, drafting, planning, learning, and prototyping. At work, I use only enterprise-approved AI tools.", items: ["Google Gemini", "Microsoft Copilot"], cases: [] },
   ],
 
